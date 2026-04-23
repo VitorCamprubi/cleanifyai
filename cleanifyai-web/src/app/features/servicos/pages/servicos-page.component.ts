@@ -3,6 +3,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { Servico, ServicoPayload } from '../../../core/models/servico.model';
+import { AuthService } from '../../../core/services/auth.service';
 import { DashboardRefreshService } from '../../../core/services/dashboard-refresh.service';
 import { HttpErrorService } from '../../../core/services/http-error.service';
 import { ServicosApiService } from '../../../core/services/servicos-api.service';
@@ -20,6 +21,7 @@ type ServicoFormField = 'nome' | 'descricao' | 'preco' | 'duracaoMinutos' | 'ati
 export class ServicosPageComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly servicosApi = inject(ServicosApiService);
+  private readonly authService = inject(AuthService);
   private readonly httpErrorService = inject(HttpErrorService);
   private readonly toastService = inject(ToastService);
   private readonly dashboardRefreshService = inject(DashboardRefreshService);
@@ -43,6 +45,10 @@ export class ServicosPageComponent implements OnInit {
     this.carregarServicos();
   }
 
+  isAdmin(): boolean {
+    return this.authService.isAdmin();
+  }
+
   carregarServicos(exibirToastErro = false): void {
     this.carregando = true;
     this.erro = '';
@@ -64,6 +70,10 @@ export class ServicosPageComponent implements OnInit {
   }
 
   salvar(): void {
+    if (!this.isAdmin()) {
+      return;
+    }
+
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
@@ -96,6 +106,10 @@ export class ServicosPageComponent implements OnInit {
   }
 
   editar(servico: Servico): void {
+    if (!this.isAdmin()) {
+      return;
+    }
+
     this.servicoEmEdicaoId = servico.id;
     this.erro = '';
     this.form.patchValue({
@@ -108,6 +122,10 @@ export class ServicosPageComponent implements OnInit {
   }
 
   excluir(servico: Servico): void {
+    if (!this.isAdmin()) {
+      return;
+    }
+
     if (!window.confirm(`Excluir o servico ${servico.nome}?`)) {
       return;
     }

@@ -1,0 +1,41 @@
+<section class="auth-page">
+  <article class="auth-panel">
+    <div class="auth-panel__brand">
+      <p class="eyebrow">CleanifyAI</p>
+      <h1>Acesse sua operacao</h1>
+      <p>Login simples com JWT para controlar agenda, clientes, servicos e dashboard.</p>
+    </div>
+
+    @if (erro) {
+      <div class="alert alert--error">{{ erro }}</div>
+    }
+
+    <form class="stack" [formGroup]="form" (ngSubmit)="entrar()">
+      <label>
+        <span>Email</span>
+        <input type="email" formControlName="email" placeholder="admin@cleanifyai.local" [class.input-invalid]="campoInvalido('email')" />
+        @if (campoInvalido('email')) {
+          <small class="field-error">{{ mensagemErro('email') }}</small>
+        }
+      </label>
+
+      <label>
+        <span>Senha</span>
+        <input type="password" formControlName="senha" placeholder="Digite sua senha" [class.input-invalid]="campoInvalido('senha')" />
+        @if (campoInvalido('senha')) {
+          <small class="field-error">{{ mensagemErro('senha') }}</small>
+        }
+      </label>
+
+      <button type="submit" class="button auth-panel__submit" [disabled]="carregando">
+        {{ carregando ? 'Entrando...' : 'Entrar' }}
+      </button>
+    </form>
+
+    <div class="auth-panel__hint">
+      <strong>Usuarios seed:</strong>
+      <span>admin&#64;cleanifyai.local / admin123</span>
+      <span>atendente&#64;cleanifyai.local / atendente123</span>
+    </div>
+  </article>
+</section>

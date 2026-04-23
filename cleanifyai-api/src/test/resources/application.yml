@@ -15,3 +15,7 @@ spring:
 app:
   seed:
     enabled: false
+  security:
+    jwt:
+      secret: cleanifyai-jwt-secret-chave-com-32-caracteres-minimos
+      expiration-seconds: 43200

@@ -2,6 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
+import { AuthUser } from '../../core/models/auth.model';
+import { AuthService } from '../../core/services/auth.service';
 import { PingApiService } from '../../core/services/ping-api.service';
 
 interface NavItem {
@@ -19,6 +21,7 @@ interface NavItem {
 })
 export class AppShellComponent implements OnInit {
   private readonly pingApi = inject(PingApiService);
+  private readonly authService = inject(AuthService);
 
   readonly navItems: NavItem[] = [
     { label: 'Dashboard', route: '/dashboard', caption: 'Resumo da operacao' },
@@ -38,5 +41,13 @@ export class AppShellComponent implements OnInit {
         this.apiOnline = false;
       }
     });
+  }
+
+  get usuarioAtual(): AuthUser | null {
+    return this.authService.usuarioAtual;
+  }
+
+  logout(): void {
+    this.authService.logout();
   }
 }

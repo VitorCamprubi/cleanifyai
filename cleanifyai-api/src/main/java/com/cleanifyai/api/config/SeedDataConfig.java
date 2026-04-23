@@ -7,14 +7,18 @@ import java.time.LocalTime;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.cleanifyai.api.domain.entity.Agendamento;
 import com.cleanifyai.api.domain.entity.Cliente;
 import com.cleanifyai.api.domain.entity.Servico;
+import com.cleanifyai.api.domain.entity.User;
 import com.cleanifyai.api.domain.enums.StatusAgendamento;
+import com.cleanifyai.api.domain.enums.UserRole;
 import com.cleanifyai.api.repository.AgendamentoRepository;
 import com.cleanifyai.api.repository.ClienteRepository;
 import com.cleanifyai.api.repository.ServicoRepository;
+import com.cleanifyai.api.repository.UserRepository;
 
 @Configuration
 public class SeedDataConfig {
@@ -22,11 +26,32 @@ public class SeedDataConfig {
     @Bean
     CommandLineRunner loadSeedData(
             AppProperties appProperties,
+            UserRepository userRepository,
             ClienteRepository clienteRepository,
             ServicoRepository servicoRepository,
-            AgendamentoRepository agendamentoRepository) {
+            AgendamentoRepository agendamentoRepository,
+            PasswordEncoder passwordEncoder) {
         return args -> {
-            if (!appProperties.getSeed().isEnabled() || clienteRepository.count() > 0 || servicoRepository.count() > 0) {
+            if (!appProperties.getSeed().isEnabled()) {
+                return;
+            }
+
+            criarUsuarioPadraoSeNecessario(
+                    userRepository,
+                    passwordEncoder,
+                    "Administrador CleanifyAI",
+                    "admin@cleanifyai.local",
+                    "admin123",
+                    UserRole.ADMIN);
+            criarUsuarioPadraoSeNecessario(
+                    userRepository,
+                    passwordEncoder,
+                    "Atendente CleanifyAI",
+                    "atendente@cleanifyai.local",
+                    "atendente123",
+                    UserRole.ATENDENTE);
+
+            if (clienteRepository.count() > 0 || servicoRepository.count() > 0) {
                 return;
             }
 
@@ -91,6 +116,26 @@ public class SeedDataConfig {
             agendamentoRepository.save(agendamento1);
             agendamentoRepository.save(agendamento2);
         };
+    }
+
+    private void criarUsuarioPadraoSeNecessario(
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
+            String nome,
+            String email,
+            String senha,
+            UserRole role) {
+        if (userRepository.existsByEmail(email)) {
+            return;
+        }
+
+        User user = new User();
+        user.setNome(nome);
+        user.setEmail(email);
+        user.setSenha(passwordEncoder.encode(senha));
+        user.setRole(role);
+        user.setAtivo(true);
+        userRepository.save(user);
     }
 }
 

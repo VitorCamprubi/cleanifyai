@@ -29,3 +29,7 @@ app:
   integracoes:
     whatsapp-enabled: ${APP_WHATSAPP_ENABLED:false}
     ia-enabled: ${APP_AI_ENABLED:false}
+  security:
+    jwt:
+      secret: ${APP_JWT_SECRET:cleanifyai-jwt-secret-chave-com-32-caracteres-minimos}
+      expiration-seconds: ${APP_JWT_EXPIRATION_SECONDS:43200}

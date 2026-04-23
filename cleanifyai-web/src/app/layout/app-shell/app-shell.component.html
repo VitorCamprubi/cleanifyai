@@ -34,7 +34,14 @@
         <p class="topbar__eyebrow">MVP vendavel</p>
         <h2>Gestao enxuta para esteticas automotivas</h2>
       </div>
-      <div class="topbar__pill">Angular + Spring Boot + MySQL</div>
+      <div class="topbar__actions">
+        <div class="topbar__user">
+          <strong>{{ usuarioAtual?.nome }}</strong>
+          <span>{{ usuarioAtual?.role }}</span>
+        </div>
+        <div class="topbar__pill">Angular + Spring Boot + MySQL</div>
+        <button type="button" class="button button--ghost" (click)="logout()">Logout</button>
+      </div>
     </header>
 
     <section class="content__body">

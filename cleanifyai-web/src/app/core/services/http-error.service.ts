@@ -27,6 +27,14 @@ export class HttpErrorService {
       return 'Registro nao encontrado.';
     }
 
+    if (error.status === 401) {
+      return 'Nao autenticado. Faca login novamente.';
+    }
+
+    if (error.status === 403) {
+      return 'Voce nao tem permissao para executar esta acao.';
+    }
+
     if (error.status === 409) {
       return 'Operacao bloqueada por integridade de dados.';
     }

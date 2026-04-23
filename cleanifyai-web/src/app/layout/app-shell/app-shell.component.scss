@@ -121,6 +121,30 @@
   margin-bottom: 1.5rem;
 }
 
+.topbar__actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.topbar__user {
+  display: grid;
+  gap: 0.15rem;
+  justify-items: end;
+}
+
+.topbar__user strong {
+  font-size: 0.95rem;
+}
+
+.topbar__user span {
+  font-size: 0.76rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #7a5560;
+  font-weight: 700;
+}
+
 .topbar h2 {
   margin: 0.4rem 0 0;
   font-size: clamp(1.75rem, 2vw, 2.4rem);
@@ -164,5 +188,11 @@
   .topbar {
     flex-direction: column;
     align-items: start;
+  }
+
+  .topbar__actions,
+  .topbar__user {
+    width: 100%;
+    justify-items: start;
   }
 }

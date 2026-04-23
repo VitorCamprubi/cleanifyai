@@ -11,6 +11,7 @@ public class AppProperties {
     private final Cors cors = new Cors();
     private final Seed seed = new Seed();
     private final Integracoes integracoes = new Integracoes();
+    private final Security security = new Security();
 
     public Cors getCors() {
         return cors;
@@ -22,6 +23,10 @@ public class AppProperties {
 
     public Integracoes getIntegracoes() {
         return integracoes;
+    }
+
+    public Security getSecurity() {
+        return security;
     }
 
     public static class Cors {
@@ -66,6 +71,35 @@ public class AppProperties {
 
         public void setIaEnabled(boolean iaEnabled) {
             this.iaEnabled = iaEnabled;
+        }
+    }
+
+    public static class Security {
+        private final Jwt jwt = new Jwt();
+
+        public Jwt getJwt() {
+            return jwt;
+        }
+    }
+
+    public static class Jwt {
+        private String secret = "cleanifyai-jwt-secret-chave-com-32-caracteres-minimos";
+        private long expirationSeconds = 43200;
+
+        public String getSecret() {
+            return secret;
+        }
+
+        public void setSecret(String secret) {
+            this.secret = secret;
+        }
+
+        public long getExpirationSeconds() {
+            return expirationSeconds;
+        }
+
+        public void setExpirationSeconds(long expirationSeconds) {
+            this.expirationSeconds = expirationSeconds;
         }
     }
 }

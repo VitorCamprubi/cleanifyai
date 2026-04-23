@@ -17,61 +17,65 @@
         <p class="eyebrow">{{ servicoEmEdicaoId ? 'Edicao' : 'Novo servico' }}</p>
         <h4>{{ servicoEmEdicaoId ? 'Atualizar item' : 'Cadastrar item' }}</h4>
       </div>
-      @if (servicoEmEdicaoId) {
+      @if (servicoEmEdicaoId && isAdmin()) {
         <button type="button" class="button button--ghost" (click)="cancelarEdicao()" [disabled]="salvando">Cancelar</button>
       }
     </div>
 
-    <form class="stack" [formGroup]="form" (ngSubmit)="salvar()">
-      <div class="form-grid">
+    @if (isAdmin()) {
+      <form class="stack" [formGroup]="form" (ngSubmit)="salvar()">
+        <div class="form-grid">
+          <label>
+            <span>Nome</span>
+            <input type="text" formControlName="nome" placeholder="Ex.: Lavagem Premium" [class.input-invalid]="campoInvalido('nome')" />
+            @if (campoInvalido('nome')) {
+              <small class="field-error">{{ mensagemErro('nome') }}</small>
+            }
+          </label>
+
+          <label>
+            <span>Preco (R$)</span>
+            <input type="number" min="0.01" step="0.01" formControlName="preco" [class.input-invalid]="campoInvalido('preco')" />
+            @if (campoInvalido('preco')) {
+              <small class="field-error">{{ mensagemErro('preco') }}</small>
+            }
+          </label>
+
+          <label>
+            <span>Duracao (minutos)</span>
+            <input type="number" min="1" step="1" formControlName="duracaoMinutos" [class.input-invalid]="campoInvalido('duracaoMinutos')" />
+            @if (campoInvalido('duracaoMinutos')) {
+              <small class="field-error">{{ mensagemErro('duracaoMinutos') }}</small>
+            }
+          </label>
+
+          <label class="checkbox-field">
+            <input type="checkbox" formControlName="ativo" />
+            <span>Servico ativo para novos agendamentos</span>
+          </label>
+        </div>
+
         <label>
-          <span>Nome</span>
-          <input type="text" formControlName="nome" placeholder="Ex.: Lavagem Premium" [class.input-invalid]="campoInvalido('nome')" />
-          @if (campoInvalido('nome')) {
-            <small class="field-error">{{ mensagemErro('nome') }}</small>
+          <span>Descricao</span>
+          <textarea
+            rows="4"
+            formControlName="descricao"
+            placeholder="Explique o que esta incluso no servico"
+            [class.input-invalid]="campoInvalido('descricao')"></textarea>
+          @if (campoInvalido('descricao')) {
+            <small class="field-error">{{ mensagemErro('descricao') }}</small>
           }
         </label>
 
-        <label>
-          <span>Preco (R$)</span>
-          <input type="number" min="0.01" step="0.01" formControlName="preco" [class.input-invalid]="campoInvalido('preco')" />
-          @if (campoInvalido('preco')) {
-            <small class="field-error">{{ mensagemErro('preco') }}</small>
-          }
-        </label>
-
-        <label>
-          <span>Duracao (minutos)</span>
-          <input type="number" min="1" step="1" formControlName="duracaoMinutos" [class.input-invalid]="campoInvalido('duracaoMinutos')" />
-          @if (campoInvalido('duracaoMinutos')) {
-            <small class="field-error">{{ mensagemErro('duracaoMinutos') }}</small>
-          }
-        </label>
-
-        <label class="checkbox-field">
-          <input type="checkbox" formControlName="ativo" />
-          <span>Servico ativo para novos agendamentos</span>
-        </label>
-      </div>
-
-      <label>
-        <span>Descricao</span>
-        <textarea
-          rows="4"
-          formControlName="descricao"
-          placeholder="Explique o que esta incluso no servico"
-          [class.input-invalid]="campoInvalido('descricao')"></textarea>
-        @if (campoInvalido('descricao')) {
-          <small class="field-error">{{ mensagemErro('descricao') }}</small>
-        }
-      </label>
-
-      <div class="toolbar">
-        <button type="submit" class="button" [disabled]="salvando || servicoProcessandoId !== null">
-          {{ salvando ? (servicoEmEdicaoId ? 'Atualizando...' : 'Salvando...') : servicoEmEdicaoId ? 'Salvar alteracoes' : 'Cadastrar servico' }}
-        </button>
-      </div>
-    </form>
+        <div class="toolbar">
+          <button type="submit" class="button" [disabled]="salvando || servicoProcessandoId !== null">
+            {{ salvando ? (servicoEmEdicaoId ? 'Atualizando...' : 'Salvando...') : servicoEmEdicaoId ? 'Salvar alteracoes' : 'Cadastrar servico' }}
+          </button>
+        </div>
+      </form>
+    } @else {
+      <div class="empty-state">Seu perfil possui acesso somente de leitura ao catalogo de servicos.</div>
+    }
   </article>
 
   <article class="panel">
@@ -95,7 +99,9 @@
               <th>Servico</th>
               <th>Preco</th>
               <th>Status</th>
-              <th></th>
+              @if (isAdmin()) {
+                <th></th>
+              }
             </tr>
           </thead>
           <tbody>
@@ -114,14 +120,16 @@
                     {{ servico.ativo ? 'ATIVO' : 'INATIVO' }}
                   </span>
                 </td>
-                <td class="actions">
-                  <button type="button" class="button button--ghost" (click)="editar(servico)" [disabled]="salvando || itemProcessando(servico.id)">
-                    Editar
-                  </button>
-                  <button type="button" class="button button--danger" (click)="excluir(servico)" [disabled]="salvando || itemProcessando(servico.id)">
-                    {{ itemProcessando(servico.id) ? 'Excluindo...' : 'Excluir' }}
-                  </button>
-                </td>
+                @if (isAdmin()) {
+                  <td class="actions">
+                    <button type="button" class="button button--ghost" (click)="editar(servico)" [disabled]="salvando || itemProcessando(servico.id)">
+                      Editar
+                    </button>
+                    <button type="button" class="button button--danger" (click)="excluir(servico)" [disabled]="salvando || itemProcessando(servico.id)">
+                      {{ itemProcessando(servico.id) ? 'Excluindo...' : 'Excluir' }}
+                    </button>
+                  </td>
+                }
               </tr>
             }
           </tbody>
