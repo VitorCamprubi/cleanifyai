@@ -1,0 +1,12 @@
+.actions {
+  display: flex;
+  justify-content: end;
+  gap: 0.5rem;
+}
+
+@media (max-width: 960px) {
+  .actions {
+    justify-content: start;
+    flex-wrap: wrap;
+  }
+}

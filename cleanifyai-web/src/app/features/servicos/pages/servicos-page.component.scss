@@ -1,0 +1,29 @@
+.actions {
+  display: flex;
+  justify-content: end;
+  gap: 0.5rem;
+}
+
+.checkbox-field {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-top: 2rem;
+}
+
+.status-pill--inactive {
+  background: rgba(214, 40, 57, 0.14);
+  color: #8f1122;
+  border-color: rgba(176, 27, 45, 0.28);
+}
+
+@media (max-width: 960px) {
+  .actions {
+    justify-content: start;
+    flex-wrap: wrap;
+  }
+
+  .checkbox-field {
+    padding-top: 0;
+  }
+}

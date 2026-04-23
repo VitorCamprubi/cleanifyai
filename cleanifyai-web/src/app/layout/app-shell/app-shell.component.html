@@ -1,0 +1,45 @@
+﻿<div class="shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand__eyebrow">Clean architecture for auto care</span>
+      <h1>CleanifyAI</h1>
+      <p>Operacao, agenda e base pronta para WhatsApp, IA e multi-tenant.</p>
+    </div>
+
+    <nav class="menu">
+      @for (item of navItems; track item.route) {
+        <a
+          [routerLink]="item.route"
+          routerLinkActive="active"
+          class="menu__item"
+        >
+          <span>{{ item.label }}</span>
+          <small>{{ item.caption }}</small>
+        </a>
+      }
+    </nav>
+
+    <div class="status-card" [class.status-card--offline]="!apiOnline">
+      <span class="status-card__dot"></span>
+      <div>
+        <strong>{{ apiOnline ? 'API conectada' : 'API indisponivel' }}</strong>
+        <p>{{ apiOnline ? 'Backend local respondendo em /api/ping' : 'Verifique cleanifyai-api em localhost:8080' }}</p>
+      </div>
+    </div>
+  </aside>
+
+  <main class="content">
+    <header class="topbar">
+      <div>
+        <p class="topbar__eyebrow">MVP vendavel</p>
+        <h2>Gestao enxuta para esteticas automotivas</h2>
+      </div>
+      <div class="topbar__pill">Angular + Spring Boot + MySQL</div>
+    </header>
+
+    <section class="content__body">
+      <router-outlet></router-outlet>
+    </section>
+  </main>
+</div>
+

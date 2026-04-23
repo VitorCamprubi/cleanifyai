@@ -1,0 +1,37 @@
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.timeline {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.timeline__item {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem 1.1rem;
+  border-radius: 1rem;
+  background: rgba(214, 40, 57, 0.07);
+  border: 1px solid rgba(176, 27, 45, 0.12);
+}
+
+.timeline__item p {
+  margin: 0.25rem 0 0;
+  color: var(--color-muted-strong);
+}
+
+@media (max-width: 960px) {
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .timeline__item {
+    grid-template-columns: 1fr;
+  }
+}

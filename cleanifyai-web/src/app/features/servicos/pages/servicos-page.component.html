@@ -1,0 +1,134 @@
+<section class="page-intro">
+  <div>
+    <p class="eyebrow">Servicos</p>
+    <h3>Monte um catalogo comercial simples e facil de evoluir</h3>
+    <p>Preco, duracao e ativacao controlados no mesmo fluxo para sustentar agenda e vendas.</p>
+  </div>
+</section>
+
+@if (erro) {
+  <div class="alert alert--error">{{ erro }}</div>
+}
+
+<section class="page-grid page-grid--form">
+  <article class="panel">
+    <div class="panel__header">
+      <div>
+        <p class="eyebrow">{{ servicoEmEdicaoId ? 'Edicao' : 'Novo servico' }}</p>
+        <h4>{{ servicoEmEdicaoId ? 'Atualizar item' : 'Cadastrar item' }}</h4>
+      </div>
+      @if (servicoEmEdicaoId) {
+        <button type="button" class="button button--ghost" (click)="cancelarEdicao()" [disabled]="salvando">Cancelar</button>
+      }
+    </div>
+
+    <form class="stack" [formGroup]="form" (ngSubmit)="salvar()">
+      <div class="form-grid">
+        <label>
+          <span>Nome</span>
+          <input type="text" formControlName="nome" placeholder="Ex.: Lavagem Premium" [class.input-invalid]="campoInvalido('nome')" />
+          @if (campoInvalido('nome')) {
+            <small class="field-error">{{ mensagemErro('nome') }}</small>
+          }
+        </label>
+
+        <label>
+          <span>Preco (R$)</span>
+          <input type="number" min="0.01" step="0.01" formControlName="preco" [class.input-invalid]="campoInvalido('preco')" />
+          @if (campoInvalido('preco')) {
+            <small class="field-error">{{ mensagemErro('preco') }}</small>
+          }
+        </label>
+
+        <label>
+          <span>Duracao (minutos)</span>
+          <input type="number" min="1" step="1" formControlName="duracaoMinutos" [class.input-invalid]="campoInvalido('duracaoMinutos')" />
+          @if (campoInvalido('duracaoMinutos')) {
+            <small class="field-error">{{ mensagemErro('duracaoMinutos') }}</small>
+          }
+        </label>
+
+        <label class="checkbox-field">
+          <input type="checkbox" formControlName="ativo" />
+          <span>Servico ativo para novos agendamentos</span>
+        </label>
+      </div>
+
+      <label>
+        <span>Descricao</span>
+        <textarea
+          rows="4"
+          formControlName="descricao"
+          placeholder="Explique o que esta incluso no servico"
+          [class.input-invalid]="campoInvalido('descricao')"></textarea>
+        @if (campoInvalido('descricao')) {
+          <small class="field-error">{{ mensagemErro('descricao') }}</small>
+        }
+      </label>
+
+      <div class="toolbar">
+        <button type="submit" class="button" [disabled]="salvando || servicoProcessandoId !== null">
+          {{ salvando ? (servicoEmEdicaoId ? 'Atualizando...' : 'Salvando...') : servicoEmEdicaoId ? 'Salvar alteracoes' : 'Cadastrar servico' }}
+        </button>
+      </div>
+    </form>
+  </article>
+
+  <article class="panel">
+    <div class="panel__header">
+      <div>
+        <p class="eyebrow">Catalogo</p>
+        <h4>{{ servicos.length }} servico(s)</h4>
+      </div>
+      <button type="button" class="button button--ghost" (click)="carregarServicos(true)" [disabled]="carregando || salvando">
+        {{ carregando ? 'Atualizando...' : 'Recarregar' }}
+      </button>
+    </div>
+
+    @if (carregando) {
+      <div class="empty-state">Carregando servicos...</div>
+    } @else if (servicos.length) {
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Servico</th>
+              <th>Preco</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (servico of servicos; track servico.id) {
+              <tr>
+                <td>
+                  <strong>{{ servico.nome }}</strong>
+                  <span>{{ servico.descricao || 'Sem descricao' }}</span>
+                </td>
+                <td>
+                  <strong>{{ servico.preco | currency: 'BRL' }}</strong>
+                  <span>{{ servico.duracaoMinutos }} min</span>
+                </td>
+                <td>
+                  <span class="status-pill" [class.status-pill--inactive]="!servico.ativo">
+                    {{ servico.ativo ? 'ATIVO' : 'INATIVO' }}
+                  </span>
+                </td>
+                <td class="actions">
+                  <button type="button" class="button button--ghost" (click)="editar(servico)" [disabled]="salvando || itemProcessando(servico.id)">
+                    Editar
+                  </button>
+                  <button type="button" class="button button--danger" (click)="excluir(servico)" [disabled]="salvando || itemProcessando(servico.id)">
+                    {{ itemProcessando(servico.id) ? 'Excluindo...' : 'Excluir' }}
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <div class="empty-state">Nenhum servico cadastrado ainda. Crie o primeiro item do catalogo para liberar novos agendamentos.</div>
+    }
+  </article>
+</section>

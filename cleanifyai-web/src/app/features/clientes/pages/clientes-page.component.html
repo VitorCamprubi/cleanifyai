@@ -1,0 +1,144 @@
+<section class="page-intro">
+  <div>
+    <p class="eyebrow">Clientes</p>
+    <h3>Cadastre e mantenha a base de relacionamento organizada</h3>
+    <p>Ficha enxuta com dados essenciais para atendimento, retorno e acompanhamento do veiculo.</p>
+  </div>
+</section>
+
+@if (erro) {
+  <div class="alert alert--error">{{ erro }}</div>
+}
+
+<section class="page-grid page-grid--form">
+  <article class="panel">
+    <div class="panel__header">
+      <div>
+        <p class="eyebrow">{{ clienteEmEdicaoId ? 'Edicao' : 'Novo cliente' }}</p>
+        <h4>{{ clienteEmEdicaoId ? 'Atualizar cadastro' : 'Criar cadastro' }}</h4>
+      </div>
+      @if (clienteEmEdicaoId) {
+        <button type="button" class="button button--ghost" (click)="cancelarEdicao()" [disabled]="salvando">Cancelar</button>
+      }
+    </div>
+
+    <form class="stack" [formGroup]="form" (ngSubmit)="salvar()">
+      <div class="form-grid">
+        <label>
+          <span>Nome</span>
+          <input type="text" formControlName="nome" placeholder="Ex.: Carlos Almeida" [class.input-invalid]="campoInvalido('nome')" />
+          @if (campoInvalido('nome')) {
+            <small class="field-error">{{ mensagemErro('nome') }}</small>
+          }
+        </label>
+
+        <label>
+          <span>Telefone</span>
+          <input type="text" formControlName="telefone" placeholder="(11) 99999-0000" [class.input-invalid]="campoInvalido('telefone')" />
+          @if (campoInvalido('telefone')) {
+            <small class="field-error">{{ mensagemErro('telefone') }}</small>
+          }
+        </label>
+
+        <label>
+          <span>E-mail</span>
+          <input type="email" formControlName="email" placeholder="cliente@exemplo.com" [class.input-invalid]="campoInvalido('email')" />
+          @if (campoInvalido('email')) {
+            <small class="field-error">{{ mensagemErro('email') }}</small>
+          }
+        </label>
+
+        <label>
+          <span>Veiculo</span>
+          <input type="text" formControlName="veiculo" placeholder="Ex.: Honda Civic" [class.input-invalid]="campoInvalido('veiculo')" />
+          @if (campoInvalido('veiculo')) {
+            <small class="field-error">{{ mensagemErro('veiculo') }}</small>
+          }
+        </label>
+
+        <label>
+          <span>Placa</span>
+          <input type="text" formControlName="placa" placeholder="ABC1D23" [class.input-invalid]="campoInvalido('placa')" />
+          @if (campoInvalido('placa')) {
+            <small class="field-error">{{ mensagemErro('placa') }}</small>
+          }
+        </label>
+      </div>
+
+      <label>
+        <span>Observacoes</span>
+        <textarea
+          rows="4"
+          formControlName="observacoes"
+          placeholder="Preferencias, historico ou alertas importantes"
+          [class.input-invalid]="campoInvalido('observacoes')"></textarea>
+        @if (campoInvalido('observacoes')) {
+          <small class="field-error">{{ mensagemErro('observacoes') }}</small>
+        }
+      </label>
+
+      <div class="toolbar">
+        <button type="submit" class="button" [disabled]="salvando || clienteProcessandoId !== null">
+          {{ salvando ? (clienteEmEdicaoId ? 'Atualizando...' : 'Salvando...') : clienteEmEdicaoId ? 'Salvar alteracoes' : 'Cadastrar cliente' }}
+        </button>
+      </div>
+    </form>
+  </article>
+
+  <article class="panel">
+    <div class="panel__header">
+      <div>
+        <p class="eyebrow">Base ativa</p>
+        <h4>{{ clientes.length }} cliente(s)</h4>
+      </div>
+      <button type="button" class="button button--ghost" (click)="carregarClientes(true)" [disabled]="carregando || salvando">
+        {{ carregando ? 'Atualizando...' : 'Recarregar' }}
+      </button>
+    </div>
+
+    @if (carregando) {
+      <div class="empty-state">Carregando clientes...</div>
+    } @else if (clientes.length) {
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>Contato</th>
+              <th>Veiculo</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (cliente of clientes; track cliente.id) {
+              <tr>
+                <td>
+                  <strong>{{ cliente.nome }}</strong>
+                  <span>{{ cliente.placa || 'Sem placa' }}</span>
+                </td>
+                <td>
+                  <strong>{{ formatarTelefone(cliente.telefone) }}</strong>
+                  <span>{{ cliente.email || 'Sem e-mail' }}</span>
+                </td>
+                <td>
+                  <strong>{{ cliente.veiculo || 'Nao informado' }}</strong>
+                  <span>{{ cliente.observacoes || 'Sem observacoes' }}</span>
+                </td>
+                <td class="actions">
+                  <button type="button" class="button button--ghost" (click)="editar(cliente)" [disabled]="salvando || itemProcessando(cliente.id)">
+                    Editar
+                  </button>
+                  <button type="button" class="button button--danger" (click)="excluir(cliente)" [disabled]="salvando || itemProcessando(cliente.id)">
+                    {{ itemProcessando(cliente.id) ? 'Excluindo...' : 'Excluir' }}
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <div class="empty-state">Nenhum cliente cadastrado ainda. Crie o primeiro cadastro para iniciar a base da estetica.</div>
+    }
+  </article>
+</section>

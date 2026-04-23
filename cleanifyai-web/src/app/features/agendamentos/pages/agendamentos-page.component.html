@@ -1,0 +1,194 @@
+<section class="page-intro">
+  <div>
+    <p class="eyebrow">Agendamentos</p>
+    <h3>Controle a agenda e o status operacional em um fluxo unico</h3>
+    <p>Crie agendamentos, acompanhe o andamento e deixe a base pronta para confirmacoes por WhatsApp no proximo ciclo.</p>
+  </div>
+</section>
+
+@if (erro) {
+  <div class="alert alert--error">{{ erro }}</div>
+}
+
+<section class="page-grid page-grid--form">
+  <article class="panel">
+    <div class="panel__header">
+      <div>
+        <p class="eyebrow">{{ agendamentoEmEdicaoId ? 'Edicao' : 'Novo agendamento' }}</p>
+        <h4>{{ agendamentoEmEdicaoId ? 'Atualizar agenda' : 'Criar agenda' }}</h4>
+      </div>
+      @if (agendamentoEmEdicaoId) {
+        <button type="button" class="button button--ghost" (click)="cancelarEdicao()" [disabled]="salvando">Cancelar</button>
+      }
+    </div>
+
+    <form class="stack" [formGroup]="form" (ngSubmit)="salvar()">
+      <div class="form-grid">
+        <label>
+          <span>Cliente</span>
+          <select formControlName="clienteId" [class.input-invalid]="campoInvalido('clienteId')">
+            <option [ngValue]="0">Selecione um cliente</option>
+            @for (cliente of clientes; track cliente.id) {
+              <option [ngValue]="cliente.id">{{ cliente.nome }}{{ cliente.placa ? ' - ' + cliente.placa : '' }}</option>
+            }
+          </select>
+          @if (campoInvalido('clienteId')) {
+            <small class="field-error">{{ mensagemErro('clienteId') }}</small>
+          }
+        </label>
+
+        <label>
+          <span>Servico</span>
+          <select formControlName="servicoId" [class.input-invalid]="campoInvalido('servicoId')">
+            <option [ngValue]="0">Selecione um servico</option>
+            @for (servico of servicos; track servico.id) {
+              <option [ngValue]="servico.id">{{ servico.nome }}{{ !servico.ativo ? ' - inativo' : '' }}</option>
+            }
+          </select>
+          @if (campoInvalido('servicoId')) {
+            <small class="field-error">{{ mensagemErro('servicoId') }}</small>
+          }
+        </label>
+
+        <label>
+          <span>Data</span>
+          <input type="date" formControlName="data" [attr.min]="dataMinima" [class.input-invalid]="campoInvalido('data')" />
+          @if (campoInvalido('data')) {
+            <small class="field-error">{{ mensagemErro('data') }}</small>
+          }
+        </label>
+
+        <label>
+          <span>Horario</span>
+          <input type="time" formControlName="horario" [class.input-invalid]="campoInvalido('horario')" />
+          @if (campoInvalido('horario')) {
+            <small class="field-error">{{ mensagemErro('horario') }}</small>
+          }
+        </label>
+
+        <label>
+          <span>Status</span>
+          <select formControlName="status" [class.input-invalid]="campoInvalido('status')">
+            @for (status of statusOptions; track status) {
+              <option [ngValue]="status">{{ rotuloStatus(status) }}</option>
+            }
+          </select>
+        </label>
+      </div>
+
+      <label>
+        <span>Observacoes</span>
+        <textarea
+          rows="4"
+          formControlName="observacoes"
+          placeholder="Detalhes do atendimento, combinados ou observacoes gerais"
+          [class.input-invalid]="campoInvalido('observacoes')"></textarea>
+        @if (campoInvalido('observacoes')) {
+          <small class="field-error">{{ mensagemErro('observacoes') }}</small>
+        }
+      </label>
+
+      <div class="toolbar">
+        <button type="submit" class="button" [disabled]="salvando || carregando || !clientes.length || !servicos.length || agendamentoProcessandoId !== null">
+          {{ salvando ? (agendamentoEmEdicaoId ? 'Atualizando...' : 'Salvando...') : agendamentoEmEdicaoId ? 'Salvar alteracoes' : 'Cadastrar agendamento' }}
+        </button>
+      </div>
+    </form>
+  </article>
+
+  <article class="panel">
+    <div class="panel__header">
+      <div>
+        <p class="eyebrow">Agenda</p>
+        <h4>{{ agendamentos.length }} agendamento(s)</h4>
+      </div>
+      <button type="button" class="button button--ghost" (click)="carregarDadosIniciais(true)" [disabled]="carregando || salvando">
+        {{ carregando ? 'Atualizando...' : 'Recarregar' }}
+      </button>
+    </div>
+
+    @if (carregando) {
+      <div class="empty-state">Carregando agenda...</div>
+    } @else if (!clientes.length || !servicos.length) {
+      <div class="empty-state">Cadastre pelo menos um cliente e um servico ativo para comecar a agendar.</div>
+    } @else if (agendamentos.length) {
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>Servico</th>
+              <th>Data</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (agendamento of agendamentos; track agendamento.id) {
+              <tr>
+                <td>
+                  <strong>{{ agendamento.cliente.nome }}</strong>
+                  <span>{{ agendamento.cliente.veiculo || 'Veiculo nao informado' }}</span>
+                </td>
+                <td>
+                  <strong>{{ agendamento.servico.nome }}</strong>
+                  <span>{{ agendamento.servico.preco | currency: 'BRL' }} - {{ agendamento.servico.duracaoMinutos }} min</span>
+                </td>
+                <td>
+                  <strong>{{ agendamento.data | date: 'dd/MM/yyyy' }}</strong>
+                  <span>{{ agendamento.horario.slice(0, 5) }}</span>
+                </td>
+                <td>
+                  <span class="status-pill">{{ rotuloStatus(agendamento.status) }}</span>
+                </td>
+                <td class="actions actions--stacked">
+                  <button type="button" class="button button--ghost" (click)="editar(agendamento)" [disabled]="salvando || itemProcessando(agendamento.id)">
+                    Editar
+                  </button>
+                  @if (agendamento.status === 'AGENDADO') {
+                    <button
+                      type="button"
+                      class="button button--ghost"
+                      (click)="alterarStatus(agendamento, 'CONFIRMADO')"
+                      [disabled]="salvando || itemProcessando(agendamento.id)">
+                      {{ processandoStatus(agendamento.id) ? 'Confirmando...' : 'Confirmar' }}
+                    </button>
+                  }
+                  @if (agendamento.status === 'CONFIRMADO') {
+                    <button
+                      type="button"
+                      class="button button--ghost"
+                      (click)="alterarStatus(agendamento, 'EM_ANDAMENTO')"
+                      [disabled]="salvando || itemProcessando(agendamento.id)">
+                      {{ processandoStatus(agendamento.id) ? 'Iniciando...' : 'Iniciar' }}
+                    </button>
+                  }
+                  @if (agendamento.status === 'EM_ANDAMENTO') {
+                    <button
+                      type="button"
+                      class="button button--ghost"
+                      (click)="alterarStatus(agendamento, 'CONCLUIDO')"
+                      [disabled]="salvando || itemProcessando(agendamento.id)">
+                      {{ processandoStatus(agendamento.id) ? 'Concluindo...' : 'Concluir' }}
+                    </button>
+                  }
+                  @if (agendamento.status !== 'CONCLUIDO' && agendamento.status !== 'CANCELADO') {
+                    <button
+                      type="button"
+                      class="button button--danger"
+                      (click)="cancelar(agendamento)"
+                      [disabled]="salvando || itemProcessando(agendamento.id)">
+                      {{ processandoCancelamento(agendamento.id) ? 'Cancelando...' : 'Cancelar' }}
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <div class="empty-state">Nenhum agendamento cadastrado ainda. Monte a agenda inicial da operacao para alimentar o dashboard.</div>
+    }
+  </article>
+</section>
