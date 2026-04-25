@@ -23,6 +23,8 @@ export class AppShellComponent implements OnInit {
   private readonly pingApi = inject(PingApiService);
   private readonly authService = inject(AuthService);
 
+  readonly logoMarkPath = 'brand/cleanifyai-logo-mark.svg';
+
   readonly navItems: NavItem[] = [
     { label: 'Dashboard', route: '/dashboard', caption: 'Resumo da operacao' },
     { label: 'Clientes', route: '/clientes', caption: 'CRM operacional basico' },
@@ -45,6 +47,10 @@ export class AppShellComponent implements OnInit {
 
   get usuarioAtual(): AuthUser | null {
     return this.authService.usuarioAtual;
+  }
+
+  get roleLabel(): string {
+    return this.usuarioAtual?.role === 'ADMIN' ? 'Administrador' : 'Atendente';
   }
 
   logout(): void {

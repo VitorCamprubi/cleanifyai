@@ -1,41 +1,65 @@
 <section class="auth-page">
-  <article class="auth-panel">
-    <div class="auth-panel__brand">
-      <p class="eyebrow">CleanifyAI</p>
-      <h1>Acesse sua operacao</h1>
-      <p>Login simples com JWT para controlar agenda, clientes, servicos e dashboard.</p>
-    </div>
+  <div class="auth-layout">
+    <aside class="auth-showcase">
+      <div class="auth-lockup">
+        <img [src]="logoMarkPath" alt="Simbolo CleanifyAI" class="auth-lockup__mark" />
+        <div class="auth-lockup__text">
+          <strong class="auth-lockup__name">Cleanify<span>AI</span></strong>
+          <small>Software para esteticas automotivas</small>
+        </div>
+      </div>
 
-    @if (erro) {
-      <div class="alert alert--error">{{ erro }}</div>
-    }
+      <div class="auth-showcase__copy">
+        <p class="eyebrow">Plataforma operacional</p>
+        <h1>Controle a operacao da estetica em um painel mais claro e profissional.</h1>
+        <p>Cadastros, agenda, status e dashboard em uma experiencia unica, pronta para crescer com o produto.</p>
+      </div>
 
-    <form class="stack" [formGroup]="form" (ngSubmit)="entrar()">
-      <label>
-        <span>Email</span>
-        <input type="email" formControlName="email" placeholder="admin@cleanifyai.local" [class.input-invalid]="campoInvalido('email')" />
-        @if (campoInvalido('email')) {
-          <small class="field-error">{{ mensagemErro('email') }}</small>
-        }
-      </label>
+      <div class="auth-showcase__chips">
+        <span>Agenda operacional</span>
+        <span>Clientes e servicos</span>
+        <span>Base pronta para WhatsApp</span>
+      </div>
+    </aside>
 
-      <label>
-        <span>Senha</span>
-        <input type="password" formControlName="senha" placeholder="Digite sua senha" [class.input-invalid]="campoInvalido('senha')" />
-        @if (campoInvalido('senha')) {
-          <small class="field-error">{{ mensagemErro('senha') }}</small>
-        }
-      </label>
+    <article class="auth-panel">
+      <div class="auth-panel__brand">
+        <span class="auth-panel__badge">Acesso seguro</span>
+        <h2>Entrar no CleanifyAI</h2>
+        <p>Use seu acesso para abrir o cockpit da operacao.</p>
+      </div>
 
-      <button type="submit" class="button auth-panel__submit" [disabled]="carregando">
-        {{ carregando ? 'Entrando...' : 'Entrar' }}
-      </button>
-    </form>
+      @if (erro) {
+        <div class="alert alert--error">{{ erro }}</div>
+      }
 
-    <div class="auth-panel__hint">
-      <strong>Usuarios seed:</strong>
-      <span>admin&#64;cleanifyai.local / admin123</span>
-      <span>atendente&#64;cleanifyai.local / atendente123</span>
-    </div>
-  </article>
+      <form class="stack" [formGroup]="form" (ngSubmit)="entrar()">
+        <label>
+          <span>Email</span>
+          <input type="email" formControlName="email" placeholder="admin@cleanifyai.local" [class.input-invalid]="campoInvalido('email')" />
+          @if (campoInvalido('email')) {
+            <small class="field-error">{{ mensagemErro('email') }}</small>
+          }
+        </label>
+
+        <label>
+          <span>Senha</span>
+          <input type="password" formControlName="senha" placeholder="Digite sua senha" [class.input-invalid]="campoInvalido('senha')" />
+          @if (campoInvalido('senha')) {
+            <small class="field-error">{{ mensagemErro('senha') }}</small>
+          }
+        </label>
+
+        <button type="submit" class="button auth-panel__submit" [disabled]="carregando">
+          {{ carregando ? 'Entrando...' : 'Entrar' }}
+        </button>
+      </form>
+
+      <div class="auth-panel__hint">
+        <strong>Usuarios seed</strong>
+        <span>admin&#64;cleanifyai.local / admin123</span>
+        <span>atendente&#64;cleanifyai.local / atendente123</span>
+      </div>
+    </article>
+  </div>
 </section>
