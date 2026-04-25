@@ -13,6 +13,7 @@ import com.cleanifyai.api.dto.dashboard.ProximoAgendamentoResponse;
 import com.cleanifyai.api.repository.AgendamentoRepository;
 import com.cleanifyai.api.repository.ClienteRepository;
 import com.cleanifyai.api.repository.ServicoRepository;
+import com.cleanifyai.api.shared.tenant.TenantContext;
 
 @Service
 public class DashboardService {
@@ -35,11 +36,13 @@ public class DashboardService {
 
     @Transactional(readOnly = true)
     public DashboardResponse obterResumo() {
+        Long empresaId = TenantContext.requireEmpresaId();
         LocalDate hoje = LocalDate.now();
         LocalTime agora = LocalTime.now().withSecond(0).withNano(0);
 
         List<ProximoAgendamentoResponse> proximosAgendamentos = agendamentoRepository
-                .findTop10ByStatusInAndDataGreaterThanEqualOrderByDataAscHorarioAsc(
+                .findTop10ByEmpresaIdAndStatusInAndDataGreaterThanEqualOrderByDataAscHorarioAsc(
+                        empresaId,
                         agendamentoService.statusAtivosParaDashboard(),
                         hoje)
                 .stream()
@@ -50,9 +53,9 @@ public class DashboardService {
                 .toList();
 
         return new DashboardResponse(
-                clienteRepository.count(),
-                servicoRepository.countByAtivoTrue(),
-                agendamentoRepository.countByData(hoje),
+                clienteRepository.countByEmpresaIdAndAtivoTrue(empresaId),
+                servicoRepository.countByEmpresaIdAndAtivoTrue(empresaId),
+                agendamentoRepository.countByEmpresaIdAndData(empresaId, hoje),
                 proximosAgendamentos);
     }
 
@@ -66,4 +69,3 @@ public class DashboardService {
                 agendamento.getStatus());
     }
 }
-

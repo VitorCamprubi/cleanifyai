@@ -1,0 +1,110 @@
+<section class="auth-page">
+  <div class="auth-layout">
+    <aside class="auth-showcase">
+      <div class="auth-lockup">
+        <img [src]="logoMarkPath" alt="Simbolo CleanifyAI" class="auth-lockup__mark" />
+        <div class="auth-lockup__text">
+          <strong class="auth-lockup__name">Cleanify<span>AI</span></strong>
+          <small>Software para esteticas automotivas</small>
+        </div>
+      </div>
+
+      <div class="auth-showcase__copy">
+        <p class="eyebrow">Onboarding em 1 minuto</p>
+        <h1>Crie sua estetica no CleanifyAI e comece a operar agora.</h1>
+        <p>Seu cadastro gera automaticamente o ambiente isolado da empresa e o usuario administrador.</p>
+      </div>
+
+      <div class="auth-showcase__chips">
+        <span>Multi-tenant nativo</span>
+        <span>Dados isolados por empresa</span>
+        <span>Pronto para WhatsApp e IA</span>
+      </div>
+    </aside>
+
+    <article class="auth-panel">
+      <div class="auth-panel__brand">
+        <span class="auth-panel__badge">Criar conta</span>
+        <h2>Cadastrar empresa</h2>
+        <p>Informe os dados da estetica e do administrador inicial.</p>
+      </div>
+
+      @if (erro) {
+        <div class="alert alert--error">{{ erro }}</div>
+      }
+
+      <form class="stack" [formGroup]="form" (ngSubmit)="cadastrar()">
+        <fieldset class="stack" formGroupName="empresa">
+          <legend>Empresa</legend>
+
+          <label>
+            <span>Nome da empresa</span>
+            <input type="text" formControlName="nome" placeholder="Estetica Brilho Total"
+                   [class.input-invalid]="empresaInvalida('nome')" />
+            @if (empresaInvalida('nome')) {
+              <small class="field-error">Informe o nome da empresa.</small>
+            }
+          </label>
+
+          <label>
+            <span>CNPJ <small>(opcional)</small></span>
+            <input type="text" formControlName="cnpj" placeholder="00.000.000/0000-00" />
+          </label>
+
+          <label>
+            <span>Telefone <small>(opcional)</small></span>
+            <input type="text" formControlName="telefone" placeholder="(11) 90000-0000" />
+          </label>
+
+          <label>
+            <span>Email da empresa <small>(opcional)</small></span>
+            <input type="email" formControlName="email" placeholder="contato@empresa.com"
+                   [class.input-invalid]="empresaInvalida('email')" />
+            @if (empresaInvalida('email')) {
+              <small class="field-error">Informe um email valido.</small>
+            }
+          </label>
+        </fieldset>
+
+        <fieldset class="stack" formGroupName="admin">
+          <legend>Administrador</legend>
+
+          <label>
+            <span>Nome</span>
+            <input type="text" formControlName="nome" placeholder="Seu nome"
+                   [class.input-invalid]="adminInvalido('nome')" />
+            @if (adminInvalido('nome')) {
+              <small class="field-error">Informe o nome.</small>
+            }
+          </label>
+
+          <label>
+            <span>Email</span>
+            <input type="email" formControlName="email" placeholder="voce@empresa.com"
+                   [class.input-invalid]="adminInvalido('email')" />
+            @if (adminInvalido('email')) {
+              <small class="field-error">Informe um email valido.</small>
+            }
+          </label>
+
+          <label>
+            <span>Senha</span>
+            <input type="password" formControlName="senha" placeholder="Minimo 6 caracteres"
+                   [class.input-invalid]="adminInvalido('senha')" />
+            @if (adminInvalido('senha')) {
+              <small class="field-error">A senha deve ter entre 6 e 64 caracteres.</small>
+            }
+          </label>
+        </fieldset>
+
+        <button type="submit" class="button auth-panel__submit" [disabled]="carregando">
+          {{ carregando ? 'Cadastrando...' : 'Criar empresa e entrar' }}
+        </button>
+      </form>
+
+      <p class="auth-panel__alt">
+        Ja tem conta? <a routerLink="/login">Fazer login</a>
+      </p>
+    </article>
+  </div>
+</section>

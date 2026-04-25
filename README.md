@@ -1,62 +1,92 @@
-﻿# CleanifyAI MVP
+# CleanifyAI
 
-Implementacao inicial do CleanifyAI como base de um SaaS para estéticas automotivas.
+SaaS para esteticas automotivas. Multi-tenant, com agenda, ordens de servico, financeiro basico e base pronta para evoluir com WhatsApp e IA.
 
-## Arquitetura proposta
+## Estado atual
 
-### Objetivo
+Funcionalidades vendaveis:
 
-Entregar um MVP vendavel com foco em operacao e agendamento, mas com estrutura preparada para:
+- Cadastro de empresa (signup) + login JWT
+- Multi-tenant real por `empresa_id` (isolamento via `TenantContext` + listener JPA)
+- CRUD de Clientes (com soft-delete), Servicos e Agendamentos com maquina de estados
+- Ordens de Servico com itens, valor total agregado e fluxo `ABERTA -> EM_EXECUCAO -> CONCLUIDA -> ENTREGUE / CANCELADA`
+- Financeiro: lancamentos de entrada/saida, vinculo opcional com OS, resumo agregado por forma de pagamento, estorno no mesmo dia
+- Dashboard com totais e proximos agendamentos por empresa
+- Auditoria automatica (`criado_em`, `atualizado_em`) em todas as entidades tenanteadas
+- Roles: `ADMIN` (escrita financeira + servicos) e `ATENDENTE` (operacional)
 
-- integracao com WhatsApp
-- motor de IA para atendimento
-- autenticacao JWT
-- multi-tenant por empresa/estetica
+Adiados (proximas iteracoes):
 
-### Decisao arquitetural
+- Refatoracao hexagonal por modulo (Fase 2 do roadmap)
+- Flyway substituindo `ddl-auto: update`
+- Refresh token + tela de sessao expirada
+- Paginacao em listagens
+- Adapter real de WhatsApp e IA
+- Pagina publica de agendamento
 
-- Backend em `Spring Boot` com API REST JSON e camadas bem definidas.
-- Frontend em `Angular` organizado por feature.
-- MySQL como banco principal.
-- Multi-tenant preparado via `empresaId` em entidade base, sem ativar tenancy completa ainda.
-- Integracoes futuras modeladas por interfaces `NoOp` para nao inflar o MVP.
+## Stack
 
-## Estrutura dos projetos
+- Backend: **Spring Boot 3.2.5**, Java 21, Spring Security + JWT (jjwt 0.12.5), Spring Data JPA, MySQL 8.x.
+- Frontend: **Angular 17** standalone components, Reactive Forms, RxJS.
+
+## Estrutura
 
 ```text
 cleanifyai/
+  docs/                          # auditoria, arquitetura, roadmap, notas por fase
   cleanifyai-api/
-    README.md
     pom.xml
     database/init-mysql.sql
     src/main/java/com/cleanifyai/api/
-      config/
-      controller/
-      domain/
-      dto/
-      exception/
-      integration/
-      repository/
-      service/
+      config/                    # security, CORS, seed, properties
+      controller/                # endpoints REST
+      domain/entity/             # JPA entities + EntidadeTenantBase
+      domain/enums/              # StatusAgendamento, StatusOrdem, FormaPagamento, ...
+      dto/                       # records de request/response por modulo
+      exception/                 # BusinessException + GlobalExceptionHandler
+      integration/whatsapp,ai/   # NoOp + interfaces para futura integracao
+      repository/                # Spring Data
+      security/                  # JWT, filter, UserDetails
+      service/                   # casos de uso
+      shared/tenant/             # TenantContext + EntityListener
   cleanifyai-web/
-    README.md
-    package.json
     angular.json
     src/app/
-      core/
-      features/
-      layout/
-    src/environments/
+      core/{guards,interceptors,models,services}/
+      features/{auth,clientes,servicos,agendamentos,ordens,financeiro,dashboard}/
+      layout/app-shell/
 ```
 
-## Execucao rapida
+## Como rodar
+
+### Pre-requisitos
+
+- Java 21
+- Maven (ou usar `mvnw`)
+- Node 18+ e npm
+- MySQL 8.x rodando local na porta 3306
 
 ### Backend
 
 ```bash
 cd cleanifyai-api
-mvnw.cmd spring-boot:run
+# variaveis (opcional - tem defaults sensatos no application.yml)
+# DB_HOST=localhost DB_PORT=3306 DB_NAME=cleanifyai DB_USERNAME=root DB_PASSWORD=...
+# APP_JWT_SECRET=<chave de 32+ caracteres>
+# APP_SEED_ENABLED=true     # cria empresa e usuarios demo
+
+mvnw.cmd spring-boot:run    # Windows
+./mvnw spring-boot:run      # Linux/macOS
 ```
+
+A primeira execucao cria automaticamente as tabelas via `ddl-auto: update`. Em desenvolvimento isso e suficiente; em producao, troque por Flyway antes de subir.
+
+Usuarios de demo (criados pelo seed):
+
+- `admin@cleanifyai.local` / `admin123`
+- `atendente@cleanifyai.local` / `atendente123`
+
+Endpoints publicos: `GET /api/ping`, `POST /api/auth/login`, `POST /api/auth/register-company`.
 
 ### Frontend
 
@@ -66,15 +96,50 @@ npm install
 npm start
 ```
 
-## Validacoes executadas
+Acesse `http://localhost:4200`. Use o login do seed ou cadastre uma nova empresa em `/signup`.
 
-- Backend: `mvnw.cmd test`
-- Frontend: `npm run build`
+### Testes
+
+Backend:
+
+```bash
+cd cleanifyai-api
+mvnw.cmd test
+```
+
+Cobertura atual: `ApiSecurityAndCrudIntegrationTest` (auth, CRUD, agendamento), `OrdemServicoIntegrationTest` (OS + maquina de estados + roles), `FinanceiroIntegrationTest` (lancamentos + estorno + agregacao + roles).
+
+Frontend:
+
+```bash
+cd cleanifyai-web
+npm run build
+```
+
+## Documentacao
+
+Todas as decisoes vivem em `docs/`:
+
+- `AUDITORIA.md` — diagnostico do MVP inicial
+- `ARQUITETURA.md` — alvo arquitetural (hexagonal por vertical slice + multi-tenant por coluna)
+- `ROADMAP.md` — fases 0 a 6 com criterios de pronto
+- `FASE-1-MULTITENANT.md` — entrega: empresa, signup, JWT com `empresaId`
+- `FASE-3-ORDEM-SERVICO.md` — entrega: OS + itens + maquina de estados
+- `FASE-4-FINANCEIRO.md` — entrega: lancamentos + resumo + estorno
+
+## Decisoes ativas
+
+- **Multi-tenant por coluna** (sem schema/db por tenant). `EntidadeTenantBase` + `TenantEntityListener` injetam `empresaId` automaticamente.
+- **Soft-delete em Cliente** via flag `ativo` consultada no service. OS e Agendamentos historicos continuam apontando para o cliente mesmo apos inativacao.
+- **JWT stateless** com claim `empresaId`. Sem refresh token ainda.
+- **WhatsApp e IA** sao portas (interfaces) com adapter `NoOp` em dev. Trocar pelo provider real e isolado.
+- **Sem MapStruct, sem Lombok**: domain anemico, mappers manuais. Reduz ferramental, mantem MVP enxuto.
 
 ## Proximos passos sugeridos
 
-1. Adicionar autenticacao JWT e perfis basicos de acesso.
-2. Evoluir o modulo de agendamento para ordem de servico.
-3. Implementar tenancy real por empresa com filtro automatico.
-4. Conectar confirmacoes e lembretes via WhatsApp.
-5. Adicionar camada de IA para sugestao de respostas e resumo de atendimento.
+1. **Flyway** — versionar schema antes do primeiro deploy.
+2. **Refresh token** — UX de sessao mais profissional.
+3. **Paginacao** — preparar para clientes maiores.
+4. **Refator hexagonal** — quando dois ou mais novos modulos entrarem.
+5. **Adapter WhatsApp** — confirmacao automatica e lembrete D-1.
+6. **Pagina publica de agendamento** — diferenciacao competitiva.

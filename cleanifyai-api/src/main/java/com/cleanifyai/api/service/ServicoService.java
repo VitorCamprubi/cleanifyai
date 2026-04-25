@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +15,7 @@ import com.cleanifyai.api.exception.BusinessException;
 import com.cleanifyai.api.exception.ResourceNotFoundException;
 import com.cleanifyai.api.repository.AgendamentoRepository;
 import com.cleanifyai.api.repository.ServicoRepository;
+import com.cleanifyai.api.shared.tenant.TenantContext;
 
 @Service
 public class ServicoService {
@@ -31,13 +33,14 @@ public class ServicoService {
     @Transactional
     public ServicoResponse criar(ServicoRequest request) {
         Servico servico = new Servico();
+        servico.setEmpresaId(TenantContext.requireEmpresaId());
         preencherCampos(servico, request);
         return toResponse(servicoRepository.save(servico));
     }
 
     @Transactional(readOnly = true)
     public List<ServicoResponse> listar() {
-        return servicoRepository.findAll()
+        return servicoRepository.findAllByEmpresaId(TenantContext.requireEmpresaId(), Sort.by(Sort.Direction.ASC, "nome"))
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -57,8 +60,9 @@ public class ServicoService {
 
     @Transactional
     public void excluir(Long id) {
+        Long empresaId = TenantContext.requireEmpresaId();
         Servico servico = buscarEntidade(id);
-        if (agendamentoRepository.existsByServicoId(id)) {
+        if (agendamentoRepository.existsByEmpresaIdAndServicoId(empresaId, id)) {
             throw new BusinessException("Servico possui agendamentos vinculados e nao pode ser excluido");
         }
         servicoRepository.delete(servico);
@@ -66,7 +70,7 @@ public class ServicoService {
 
     @Transactional(readOnly = true)
     public Servico buscarEntidade(Long id) {
-        return servicoRepository.findById(id)
+        return servicoRepository.findByIdAndEmpresaId(id, TenantContext.requireEmpresaId())
                 .orElseThrow(() -> new ResourceNotFoundException("Servico nao encontrado: " + id));
     }
 
@@ -112,4 +116,3 @@ public class ServicoService {
         return normalizado.isBlank() ? null : normalizado;
     }
 }
-

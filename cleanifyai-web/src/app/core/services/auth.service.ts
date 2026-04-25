@@ -4,7 +4,13 @@ import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
-import { AuthUser, LoginPayload, LoginResponse, UserRole } from '../models/auth.model';
+import {
+  AuthUser,
+  LoginPayload,
+  LoginResponse,
+  RegisterCompanyPayload,
+  UserRole
+} from '../models/auth.model';
 
 const AUTH_STORAGE_KEY = 'cleanifyai.auth.session';
 
@@ -12,13 +18,20 @@ const AUTH_STORAGE_KEY = 'cleanifyai.auth.session';
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
-  private readonly endpoint = `${environment.apiUrl}/auth/login`;
+  private readonly loginEndpoint = `${environment.apiUrl}/auth/login`;
+  private readonly registerEndpoint = `${environment.apiUrl}/auth/register-company`;
   private readonly sessionSubject = new BehaviorSubject<LoginResponse | null>(this.carregarSessao());
 
   readonly session$ = this.sessionSubject.asObservable();
 
   login(payload: LoginPayload): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(this.endpoint, payload).pipe(
+    return this.http.post<LoginResponse>(this.loginEndpoint, payload).pipe(
+      tap((response) => this.salvarSessao(response))
+    );
+  }
+
+  registerCompany(payload: RegisterCompanyPayload): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(this.registerEndpoint, payload).pipe(
       tap((response) => this.salvarSessao(response))
     );
   }
@@ -60,6 +73,10 @@ export class AuthService {
 
   get usuarioAtual(): AuthUser | null {
     return this.sessionSubject.value?.user ?? null;
+  }
+
+  get empresaIdAtual(): number | null {
+    return this.usuarioAtual?.empresaId ?? null;
   }
 
   private salvarSessao(response: LoginResponse): void {

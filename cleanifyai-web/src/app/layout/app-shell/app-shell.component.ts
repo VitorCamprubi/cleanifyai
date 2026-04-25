@@ -29,7 +29,9 @@ export class AppShellComponent implements OnInit {
     { label: 'Dashboard', route: '/dashboard', caption: 'Resumo da operacao' },
     { label: 'Clientes', route: '/clientes', caption: 'CRM operacional basico' },
     { label: 'Servicos', route: '/servicos', caption: 'Catalogo e precificacao' },
-    { label: 'Agendamentos', route: '/agendamentos', caption: 'Agenda e status' }
+    { label: 'Agendamentos', route: '/agendamentos', caption: 'Agenda e status' },
+    { label: 'Ordens de Servico', route: '/ordens', caption: 'OS e execucao' },
+    { label: 'Financeiro', route: '/financeiro', caption: 'Caixa e lancamentos' }
   ];
 
   apiOnline = false;

@@ -22,6 +22,7 @@ import com.cleanifyai.api.exception.BusinessException;
 import com.cleanifyai.api.exception.ResourceNotFoundException;
 import com.cleanifyai.api.integration.whatsapp.NotificadorWhatsApp;
 import com.cleanifyai.api.repository.AgendamentoRepository;
+import com.cleanifyai.api.shared.tenant.TenantContext;
 
 @Service
 public class AgendamentoService {
@@ -50,6 +51,7 @@ public class AgendamentoService {
         validarDataHorario(request.data(), request.horario());
 
         Agendamento agendamento = new Agendamento();
+        agendamento.setEmpresaId(TenantContext.requireEmpresaId());
         preencherCampos(agendamento, request, cliente, servico);
         Agendamento salvo = agendamentoRepository.save(agendamento);
         // Futuro ponto de extensao para disparo de confirmacao automatica via WhatsApp.
@@ -59,7 +61,8 @@ public class AgendamentoService {
 
     @Transactional(readOnly = true)
     public List<AgendamentoResponse> listar() {
-        return agendamentoRepository.findAll(Sort.by(Sort.Direction.ASC, "data", "horario"))
+        return agendamentoRepository
+                .findAllByEmpresaId(TenantContext.requireEmpresaId(), Sort.by(Sort.Direction.ASC, "data", "horario"))
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -108,7 +111,7 @@ public class AgendamentoService {
 
     @Transactional(readOnly = true)
     public Agendamento buscarEntidade(Long id) {
-        return agendamentoRepository.findById(id)
+        return agendamentoRepository.findByIdAndEmpresaId(id, TenantContext.requireEmpresaId())
                 .orElseThrow(() -> new ResourceNotFoundException("Agendamento nao encontrado: " + id));
     }
 
@@ -206,4 +209,3 @@ public class AgendamentoService {
                 agendamento.getObservacoes());
     }
 }
-

@@ -2,6 +2,7 @@ package com.cleanifyai.api.service;
 
 import java.util.List;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,32 +11,31 @@ import com.cleanifyai.api.dto.cliente.ClienteRequest;
 import com.cleanifyai.api.dto.cliente.ClienteResponse;
 import com.cleanifyai.api.exception.BusinessException;
 import com.cleanifyai.api.exception.ResourceNotFoundException;
-import com.cleanifyai.api.repository.AgendamentoRepository;
 import com.cleanifyai.api.repository.ClienteRepository;
+import com.cleanifyai.api.shared.tenant.TenantContext;
 
 @Service
 public class ClienteService {
 
     private final ClienteRepository clienteRepository;
-    private final AgendamentoRepository agendamentoRepository;
 
-    public ClienteService(
-            ClienteRepository clienteRepository,
-            AgendamentoRepository agendamentoRepository) {
+    public ClienteService(ClienteRepository clienteRepository) {
         this.clienteRepository = clienteRepository;
-        this.agendamentoRepository = agendamentoRepository;
     }
 
     @Transactional
     public ClienteResponse criar(ClienteRequest request) {
         Cliente cliente = new Cliente();
+        cliente.setEmpresaId(TenantContext.requireEmpresaId());
+        cliente.setAtivo(true);
         preencherCampos(cliente, request);
         return toResponse(clienteRepository.save(cliente));
     }
 
     @Transactional(readOnly = true)
     public List<ClienteResponse> listar() {
-        return clienteRepository.findAll()
+        return clienteRepository
+                .findAllByEmpresaIdAndAtivoTrue(TenantContext.requireEmpresaId(), Sort.by(Sort.Direction.ASC, "nome"))
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -55,16 +55,27 @@ public class ClienteService {
 
     @Transactional
     public void excluir(Long id) {
+        // Soft-delete: marcamos como inativo. Agendamentos e OS historicas continuam validos
+        // e podem referenciar este cliente, mas ele desaparece das listagens e novas operacoes.
         Cliente cliente = buscarEntidade(id);
-        if (agendamentoRepository.existsByClienteId(id)) {
-            throw new BusinessException("Cliente possui agendamentos vinculados e nao pode ser excluido");
-        }
-        clienteRepository.delete(cliente);
+        cliente.setAtivo(false);
+        clienteRepository.save(cliente);
     }
 
     @Transactional(readOnly = true)
     public Cliente buscarEntidade(Long id) {
-        return clienteRepository.findById(id)
+        return clienteRepository.findByIdAndEmpresaIdAndAtivoTrue(id, TenantContext.requireEmpresaId())
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente nao encontrado: " + id));
+    }
+
+    /**
+     * Para uso interno por OS/Agendamento: localiza o cliente mesmo se estiver inativo,
+     * desde que pertenca a empresa atual. Garante que historico mantenha a referencia
+     * legivel.
+     */
+    @Transactional(readOnly = true)
+    public Cliente buscarEntidadeIncluindoInativos(Long id) {
+        return clienteRepository.findByIdAndEmpresaId(id, TenantContext.requireEmpresaId())
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente nao encontrado: " + id));
     }
 
@@ -134,4 +145,3 @@ public class ClienteService {
         return normalizado.isBlank() ? null : normalizado;
     }
 }
-

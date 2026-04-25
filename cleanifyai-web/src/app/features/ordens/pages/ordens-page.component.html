@@ -1,0 +1,190 @@
+<section class="ordens-page">
+  <header class="page-header">
+    <div>
+      <p class="page-eyebrow">Operacao</p>
+      <h2>Ordens de Servico</h2>
+      <p>Registre, acompanhe e finalize cada execucao com itens, valores e status.</p>
+    </div>
+  </header>
+
+  @if (erro) {
+    <div class="alert alert--error">{{ erro }}</div>
+  }
+
+  <div class="ordens-grid">
+    <article class="card form-card">
+      <header class="card-header">
+        <div>
+          <h3>{{ ordemEmEdicaoId ? 'Editar OS #' + ordemEmEdicaoId : 'Nova OS' }}</h3>
+          <p>Adicione cliente, itens e observacoes.</p>
+        </div>
+        @if (ordemEmEdicaoId !== null) {
+          <button type="button" class="button button--ghost" (click)="cancelarEdicao()">Cancelar</button>
+        }
+      </header>
+
+      <form [formGroup]="form" (ngSubmit)="salvar()" class="stack">
+        <label>
+          <span>Cliente</span>
+          <select formControlName="clienteId">
+            <option [ngValue]="0" disabled>Selecione o cliente</option>
+            @for (cliente of clientes; track cliente.id) {
+              <option [ngValue]="cliente.id">{{ cliente.nome }} - {{ cliente.placa || 'sem placa' }}</option>
+            }
+          </select>
+        </label>
+
+        <label>
+          <span>Observacoes</span>
+          <textarea formControlName="observacoes" rows="2" placeholder="Notas internas, instrucoes do cliente..."></textarea>
+        </label>
+
+        <div class="itens-section">
+          <div class="itens-section__header">
+            <h4>Itens</h4>
+            <button type="button" class="button button--ghost" (click)="adicionarItem()">+ Adicionar item</button>
+          </div>
+
+          @if (itensFormArray.length === 0) {
+            <p class="empty-itens">Nenhum item adicionado ainda.</p>
+          }
+
+          <div class="itens-lista" formArrayName="itens">
+            @for (grupo of itensFormArray.controls; track $index; let i = $index) {
+              <div class="item-row" [formGroupName]="i">
+                <label>
+                  <span>Servico</span>
+                  <select formControlName="servicoId">
+                    <option [ngValue]="0" disabled>Selecione</option>
+                    @for (servico of servicos; track servico.id) {
+                      <option [ngValue]="servico.id">{{ servico.nome }}</option>
+                    }
+                  </select>
+                </label>
+
+                <label>
+                  <span>Descricao</span>
+                  <input type="text" formControlName="descricao" placeholder="Detalhe do item" />
+                </label>
+
+                <label>
+                  <span>Qtd</span>
+                  <input type="number" min="1" formControlName="quantidade" />
+                </label>
+
+                <label>
+                  <span>Valor unit.</span>
+                  <input type="number" step="0.01" min="0" formControlName="valorUnitario" />
+                </label>
+
+                <button type="button" class="button button--ghost item-row__remove" (click)="removerItem(i)" aria-label="Remover">x</button>
+              </div>
+            }
+          </div>
+
+          <div class="itens-total">
+            <strong>Total estimado:</strong>
+            <span>{{ totalCalculado | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</span>
+          </div>
+        </div>
+
+        <button type="submit" class="button button--primary" [disabled]="salvando">
+          {{ salvando ? 'Salvando...' : (ordemEmEdicaoId ? 'Atualizar OS' : 'Criar OS') }}
+        </button>
+      </form>
+    </article>
+
+    <article class="card list-card">
+      <header class="card-header">
+        <div>
+          <h3>Ordens registradas</h3>
+          <p>Filtre por status para focar no que esta em andamento.</p>
+        </div>
+        <button type="button" class="button button--ghost" (click)="recarregarOrdens()" [disabled]="carregando">
+          {{ carregando ? '...' : 'Atualizar' }}
+        </button>
+      </header>
+
+      <div class="filtros">
+        @for (filtro of statusFiltros; track filtro.value) {
+          <button type="button"
+                  class="filtro-chip"
+                  [class.filtro-chip--ativo]="filtroAtual === filtro.value"
+                  (click)="trocarFiltro(filtro.value)">
+            {{ filtro.label }}
+          </button>
+        }
+      </div>
+
+      @if (carregando) {
+        <p class="loading">Carregando...</p>
+      } @else if (ordens.length === 0) {
+        <p class="empty">Nenhuma OS encontrada para este filtro.</p>
+      } @else {
+        <ul class="ordens-lista">
+          @for (ordem of ordens; track ordem.id) {
+            <li class="ordem-card">
+              <div class="ordem-card__top">
+                <div>
+                  <strong>OS #{{ ordem.id }}</strong>
+                  <span class="ordem-card__cliente">{{ ordem.clienteNome }}</span>
+                  <small>{{ ordem.clienteVeiculo }} {{ ordem.clientePlaca ? '· ' + ordem.clientePlaca : '' }}</small>
+                </div>
+                <span class="status-pill status-pill--{{ ordem.status | lowercase }}">{{ statusLabel[ordem.status] }}</span>
+              </div>
+
+              <div class="ordem-card__detalhes">
+                <span><strong>Total:</strong> {{ ordem.valorTotal | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</span>
+                <span><strong>Aberta:</strong> {{ ordem.abertaEm | date:'dd/MM/yy HH:mm' }}</span>
+                @if (ordem.fechadaEm) {
+                  <span><strong>Fechada:</strong> {{ ordem.fechadaEm | date:'dd/MM/yy HH:mm' }}</span>
+                }
+              </div>
+
+              @if (ordem.itens.length) {
+                <ul class="ordem-card__itens">
+                  @for (item of ordem.itens; track item.id) {
+                    <li>
+                      <span>{{ item.descricao }} <small>x{{ item.quantidade }}</small></span>
+                      <span>{{ item.valorTotal | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</span>
+                    </li>
+                  }
+                </ul>
+              }
+
+              @if (ordem.observacoes) {
+                <p class="ordem-card__obs">{{ ordem.observacoes }}</p>
+              }
+
+              <footer class="ordem-card__acoes">
+                @for (proximo of acoesProximas(ordem.status); track proximo) {
+                  <button type="button"
+                          class="button button--small"
+                          [disabled]="itemProcessando(ordem.id)"
+                          (click)="alterarStatus(ordem, proximo)">
+                    {{ statusLabel[proximo] }}
+                  </button>
+                }
+
+                @if (ordem.status === 'ABERTA' || ordem.status === 'EM_EXECUCAO') {
+                  <button type="button"
+                          class="button button--small button--ghost"
+                          [disabled]="itemProcessando(ordem.id)"
+                          (click)="editar(ordem)">
+                    Editar
+                  </button>
+                  <button type="button"
+                          class="button button--small button--danger"
+                          [disabled]="itemProcessando(ordem.id)"
+                          (click)="cancelarOrdem(ordem)">
+                    Cancelar OS
+                  </button>
+                }
+              </footer>
+            </li>
+          }
+        </ul>
+      }
+    </article>
+  </div>
+</section>

@@ -1,0 +1,229 @@
+.financeiro-page {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.page-header h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+}
+
+.page-eyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--color-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.card {
+  background: linear-gradient(180deg, rgba(13, 24, 55, 0.94) 0%, rgba(9, 19, 46, 0.94) 100%);
+  border: 1px solid rgba(116, 152, 255, 0.16);
+  border-radius: 1.5rem;
+  padding: 1.5rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.card-header h3 {
+  margin: 0;
+  font-family: var(--font-display);
+}
+
+.card-header p {
+  margin: 0.2rem 0 0;
+  color: var(--color-muted);
+  font-size: 0.92rem;
+}
+
+.warn {
+  color: #ffd966;
+}
+
+.filtro-row {
+  display: flex;
+  gap: 0.85rem;
+  align-items: end;
+  flex-wrap: wrap;
+}
+
+.filtro-row label {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 9rem;
+}
+
+.filtro-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+
+.resumo-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 0.85rem;
+}
+
+.resumo-card {
+  padding: 1.1rem 1.25rem;
+  border-radius: 1.2rem;
+  background: rgba(15, 28, 60, 0.55);
+  border: 1px solid rgba(116, 152, 255, 0.14);
+  display: grid;
+  gap: 0.25rem;
+}
+
+.resumo-card span {
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--color-muted);
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.resumo-card strong {
+  font-size: 1.5rem;
+  font-family: var(--font-display);
+}
+
+.resumo-card--entrada strong { color: #b9f7c4; }
+.resumo-card--saida strong { color: #ff97a3; }
+.resumo-card--positivo strong { color: #b9f7c4; }
+.resumo-card--negativo strong { color: #ff97a3; }
+.resumo-card--info strong { color: #aacfff; }
+
+.formas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: 0.5rem;
+}
+
+.forma-card {
+  padding: 0.7rem 0.9rem;
+  border: 1px dashed rgba(116, 152, 255, 0.14);
+  border-radius: 0.85rem;
+  display: grid;
+  gap: 0.15rem;
+  font-size: 0.85rem;
+  background: rgba(15, 28, 60, 0.35);
+}
+
+.forma-card span {
+  font-weight: 700;
+  color: #f5fbff;
+}
+
+.forma-card small {
+  color: var(--color-muted);
+}
+
+.grid-financeiro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.duas-colunas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.7rem;
+}
+
+.lancamentos-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.lancamento-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+  background: rgba(15, 28, 60, 0.55);
+  border: 1px solid rgba(116, 152, 255, 0.14);
+  border-radius: 0.95rem;
+}
+
+.lancamento-row__left {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.lancamento-row__left strong {
+  display: block;
+  color: #f5fbff;
+}
+
+.lancamento-row__left small {
+  display: block;
+  color: var(--color-muted);
+  font-size: 0.82rem;
+}
+
+.lancamento-row__tipo {
+  padding: 0.3rem 0.55rem;
+  border-radius: 0.55rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.lancamento-row__tipo--entrada {
+  background: rgba(64, 240, 130, 0.16);
+  color: #b9f7c4;
+}
+
+.lancamento-row__tipo--saida {
+  background: rgba(255, 96, 110, 0.18);
+  color: #ff97a3;
+}
+
+.lancamento-row__right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.3rem;
+}
+
+.lancamento-row__right strong {
+  font-size: 1.05rem;
+}
+
+.positivo { color: #b9f7c4; }
+.negativo { color: #ff97a3; }
+
+.empty,
+.loading {
+  margin: 0;
+  color: var(--color-muted);
+  font-style: italic;
+}
+
+@media (max-width: 1100px) {
+  .grid-financeiro {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .duas-colunas {
+    grid-template-columns: 1fr;
+  }
+  .lancamento-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .lancamento-row__right {
+    align-items: flex-start;
+  }
+}

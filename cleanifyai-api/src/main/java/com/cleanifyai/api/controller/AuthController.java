@@ -1,5 +1,6 @@
 package com.cleanifyai.api.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -8,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.cleanifyai.api.dto.auth.LoginRequest;
 import com.cleanifyai.api.dto.auth.LoginResponse;
+import com.cleanifyai.api.dto.auth.RegisterCompanyRequest;
 import com.cleanifyai.api.service.AuthService;
 
 import jakarta.validation.Valid;
@@ -25,5 +27,11 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    @PostMapping("/register-company")
+    public ResponseEntity<LoginResponse> registerCompany(@Valid @RequestBody RegisterCompanyRequest request) {
+        LoginResponse response = authService.registerCompany(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }

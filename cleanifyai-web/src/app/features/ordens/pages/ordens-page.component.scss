@@ -1,0 +1,263 @@
+.ordens-page {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.page-header h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+}
+
+.page-eyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--color-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.ordens-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.card {
+  background: linear-gradient(180deg, rgba(13, 24, 55, 0.94) 0%, rgba(9, 19, 46, 0.94) 100%);
+  border: 1px solid rgba(116, 152, 255, 0.16);
+  border-radius: 1.5rem;
+  padding: 1.5rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.card-header h3 {
+  margin: 0;
+  font-family: var(--font-display);
+}
+
+.card-header p {
+  margin: 0.2rem 0 0;
+  color: var(--color-muted);
+  font-size: 0.92rem;
+}
+
+.itens-section {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1rem;
+  border: 1px dashed rgba(116, 152, 255, 0.18);
+  border-radius: 1rem;
+}
+
+.itens-section__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.itens-section__header h4 {
+  margin: 0;
+}
+
+.itens-lista {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.item-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1.5fr) 4rem 6rem auto;
+  gap: 0.65rem;
+  align-items: end;
+}
+
+.item-row label {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.item-row__remove {
+  height: fit-content;
+  align-self: end;
+}
+
+.empty-itens {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.92rem;
+}
+
+.itens-total {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 0.7rem;
+  border-top: 1px solid rgba(116, 152, 255, 0.14);
+  font-size: 1.05rem;
+}
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.filtro-chip {
+  border: 1px solid rgba(116, 152, 255, 0.2);
+  background: rgba(15, 28, 60, 0.6);
+  color: var(--color-muted);
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.86rem;
+  transition: all 0.15s ease;
+}
+
+.filtro-chip:hover {
+  color: #f5fbff;
+}
+
+.filtro-chip--ativo {
+  background: var(--gradient-brand);
+  color: #06122e;
+  border-color: transparent;
+  font-weight: 700;
+}
+
+.ordens-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.ordem-card {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1.1rem 1.2rem;
+  background: rgba(15, 28, 60, 0.55);
+  border: 1px solid rgba(116, 152, 255, 0.14);
+  border-radius: 1rem;
+}
+
+.ordem-card__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.ordem-card__top div {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.ordem-card__top strong {
+  font-size: 1rem;
+}
+
+.ordem-card__cliente {
+  color: #dff5ff;
+  font-weight: 700;
+}
+
+.ordem-card__top small {
+  color: var(--color-muted);
+}
+
+.ordem-card__detalhes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+  font-size: 0.9rem;
+  color: var(--color-muted);
+}
+
+.ordem-card__detalhes strong {
+  color: #f5fbff;
+  margin-right: 0.3rem;
+}
+
+.ordem-card__itens {
+  list-style: none;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.75rem;
+  background: rgba(7, 16, 40, 0.45);
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+}
+
+.ordem-card__itens li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.ordem-card__itens small {
+  color: var(--color-muted);
+}
+
+.ordem-card__obs {
+  margin: 0;
+  padding: 0.6rem 0.8rem;
+  background: rgba(116, 152, 255, 0.08);
+  border-radius: 0.6rem;
+  font-size: 0.92rem;
+  color: var(--color-muted);
+}
+
+.ordem-card__acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.status-pill {
+  padding: 0.28rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 800;
+  background: rgba(255, 255, 255, 0.08);
+  color: #f5fbff;
+}
+
+.status-pill--aberta { background: rgba(24, 228, 211, 0.18); color: #90fff5; }
+.status-pill--em_execucao { background: rgba(255, 196, 0, 0.16); color: #ffd966; }
+.status-pill--concluida { background: rgba(120, 184, 255, 0.16); color: #aacfff; }
+.status-pill--entregue { background: rgba(64, 240, 130, 0.16); color: #b9f7c4; }
+.status-pill--cancelada { background: rgba(255, 96, 110, 0.16); color: #ff97a3; }
+
+.empty,
+.loading {
+  margin: 0;
+  color: var(--color-muted);
+  font-style: italic;
+}
+
+@media (max-width: 1100px) {
+  .ordens-grid {
+    grid-template-columns: 1fr;
+  }
+  .item-row {
+    grid-template-columns: 1fr 1fr;
+  }
+  .item-row__remove {
+    grid-column: span 2;
+    justify-self: end;
+  }
+}

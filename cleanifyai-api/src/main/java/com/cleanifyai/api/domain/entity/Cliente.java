@@ -33,6 +33,9 @@ public class Cliente extends EntidadeTenantBase {
     @Column(length = 500)
     private String observacoes;
 
+    @Column(nullable = false)
+    private Boolean ativo = true;
+
     public Long getId() {
         return id;
     }
@@ -88,5 +91,12 @@ public class Cliente extends EntidadeTenantBase {
     public void setObservacoes(String observacoes) {
         this.observacoes = observacoes;
     }
-}
 
+    public Boolean getAtivo() {
+        return ativo;
+    }
+
+    public void setAtivo(Boolean ativo) {
+        this.ativo = ativo;
+    }
+}

@@ -23,11 +23,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import com.cleanifyai.api.domain.entity.Cliente;
+import com.cleanifyai.api.domain.entity.Empresa;
 import com.cleanifyai.api.domain.entity.Servico;
 import com.cleanifyai.api.domain.entity.User;
 import com.cleanifyai.api.domain.enums.UserRole;
 import com.cleanifyai.api.repository.AgendamentoRepository;
 import com.cleanifyai.api.repository.ClienteRepository;
+import com.cleanifyai.api.repository.EmpresaRepository;
 import com.cleanifyai.api.repository.ServicoRepository;
 import com.cleanifyai.api.repository.UserRepository;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -47,6 +49,9 @@ class ApiSecurityAndCrudIntegrationTest {
     private UserRepository userRepository;
 
     @Autowired
+    private EmpresaRepository empresaRepository;
+
+    @Autowired
     private ClienteRepository clienteRepository;
 
     @Autowired
@@ -60,6 +65,7 @@ class ApiSecurityAndCrudIntegrationTest {
 
     private Cliente clienteBase;
     private Servico servicoBase;
+    private Empresa empresaPadrao;
 
     @BeforeEach
     void setUp() {
@@ -67,12 +73,18 @@ class ApiSecurityAndCrudIntegrationTest {
         clienteRepository.deleteAll();
         servicoRepository.deleteAll();
         userRepository.deleteAll();
+        empresaRepository.deleteAll();
+
+        empresaPadrao = new Empresa();
+        empresaPadrao.setNome("Empresa Teste");
+        empresaPadrao.setAtiva(true);
+        empresaPadrao = empresaRepository.save(empresaPadrao);
 
         criarUsuario("Administrador CleanifyAI", "admin@cleanifyai.local", "admin123", UserRole.ADMIN);
         criarUsuario("Atendente CleanifyAI", "atendente@cleanifyai.local", "atendente123", UserRole.ATENDENTE);
 
         clienteBase = new Cliente();
-        clienteBase.setEmpresaId(1L);
+        clienteBase.setEmpresaId(empresaPadrao.getId());
         clienteBase.setNome("Cliente Base");
         clienteBase.setTelefone("5511999991111");
         clienteBase.setEmail("cliente.base@teste.local");
@@ -81,7 +93,7 @@ class ApiSecurityAndCrudIntegrationTest {
         clienteBase = clienteRepository.save(clienteBase);
 
         servicoBase = new Servico();
-        servicoBase.setEmpresaId(1L);
+        servicoBase.setEmpresaId(empresaPadrao.getId());
         servicoBase.setNome("Servico Base");
         servicoBase.setDescricao("Servico base para testes");
         servicoBase.setPreco(new BigDecimal("89.90"));
@@ -349,6 +361,7 @@ class ApiSecurityAndCrudIntegrationTest {
 
     private void criarUsuario(String nome, String email, String senha, UserRole role) {
         User user = new User();
+        user.setEmpresaId(empresaPadrao.getId());
         user.setNome(nome);
         user.setEmail(email);
         user.setSenha(passwordEncoder.encode(senha));

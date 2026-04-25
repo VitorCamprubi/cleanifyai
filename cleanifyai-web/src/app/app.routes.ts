@@ -11,6 +11,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/auth/pages/login-page.component').then((m) => m.LoginPageComponent)
   },
   {
+    path: 'signup',
+    canActivate: [loginGuard],
+    loadComponent: () => import('./features/auth/pages/signup-page.component').then((m) => m.SignupPageComponent)
+  },
+  {
     path: '',
     canActivate: [authGuard],
     canActivateChild: [authChildGuard],
@@ -36,6 +41,14 @@ export const routes: Routes = [
       {
         path: 'agendamentos',
         loadComponent: () => import('./features/agendamentos/pages/agendamentos-page.component').then((m) => m.AgendamentosPageComponent)
+      },
+      {
+        path: 'ordens',
+        loadComponent: () => import('./features/ordens/pages/ordens-page.component').then((m) => m.OrdensPageComponent)
+      },
+      {
+        path: 'financeiro',
+        loadComponent: () => import('./features/financeiro/pages/financeiro-page.component').then((m) => m.FinanceiroPageComponent)
       }
     ]
   },

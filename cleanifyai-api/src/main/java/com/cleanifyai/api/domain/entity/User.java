@@ -19,6 +19,9 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "empresa_id", nullable = false)
+    private Long empresaId;
+
     @Column(nullable = false, length = 120)
     private String nome;
 
@@ -41,6 +44,14 @@ public class User {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getEmpresaId() {
+        return empresaId;
+    }
+
+    public void setEmpresaId(Long empresaId) {
+        this.empresaId = empresaId;
     }
 
     public String getNome() {

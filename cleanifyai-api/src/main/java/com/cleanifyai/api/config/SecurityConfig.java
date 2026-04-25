@@ -40,15 +40,21 @@ public class SecurityConfig {
                         .accessDeniedHandler(accessDeniedHandler))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/api/auth/login", "/api/ping").permitAll()
+                        .requestMatchers("/api/auth/login", "/api/auth/register-company", "/api/ping").permitAll()
                         .requestMatchers(
                                 "/api/clientes", "/api/clientes/**",
+                                "/api/veiculos", "/api/veiculos/**",
                                 "/api/agendamentos", "/api/agendamentos/**",
+                                "/api/ordens", "/api/ordens/**",
                                 "/api/dashboard", "/api/dashboard/**")
                             .hasAnyRole("ADMIN", "ATENDENTE")
                         .requestMatchers(HttpMethod.GET, "/api/servicos", "/api/servicos/**")
                             .hasAnyRole("ADMIN", "ATENDENTE")
                         .requestMatchers("/api/servicos", "/api/servicos/**")
+                            .hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/financeiro/**")
+                            .hasAnyRole("ADMIN", "ATENDENTE")
+                        .requestMatchers("/api/financeiro/**")
                             .hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

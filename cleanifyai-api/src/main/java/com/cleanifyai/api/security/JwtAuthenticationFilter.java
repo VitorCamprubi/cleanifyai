@@ -11,6 +11,8 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.cleanifyai.api.shared.tenant.TenantContext;
+
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -41,7 +43,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String authHeader = request.getHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
+            try {
+                filterChain.doFilter(request, response);
+            } finally {
+                TenantContext.clear();
+            }
             return;
         }
 
@@ -55,6 +61,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 if (!jwtService.isTokenValid(token, userDetails)) {
                     throw new BadCredentialsException("Token invalido ou expirado");
                 }
+
+                Long empresaId = jwtService.extractEmpresaId(token);
+                if (empresaId == null) {
+                    empresaId = userDetails.getUser().getEmpresaId();
+                }
+                TenantContext.setEmpresaId(empresaId);
 
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         userDetails,
@@ -71,6 +83,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     request,
                     response,
                     new BadCredentialsException("Token invalido ou expirado", ex));
+        } finally {
+            TenantContext.clear();
         }
     }
 }

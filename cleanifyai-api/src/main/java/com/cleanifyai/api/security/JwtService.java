@@ -19,6 +19,10 @@ import io.jsonwebtoken.security.Keys;
 @Service
 public class JwtService {
 
+    public static final String CLAIM_EMPRESA_ID = "empresaId";
+    public static final String CLAIM_ROLE = "role";
+    public static final String CLAIM_NAME = "name";
+
     private final AppProperties appProperties;
     private final SecretKey signingKey;
 
@@ -36,8 +40,9 @@ public class JwtService {
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(expiration))
                 .claims(Map.of(
-                        "role", user.getRole().name(),
-                        "name", user.getNome()))
+                        CLAIM_ROLE, user.getRole().name(),
+                        CLAIM_NAME, user.getNome(),
+                        CLAIM_EMPRESA_ID, user.getEmpresaId()))
                 .signWith(signingKey)
                 .compact();
     }
@@ -48,6 +53,17 @@ public class JwtService {
 
     public String extractUsername(String token) {
         return extractAllClaims(token).getSubject();
+    }
+
+    public Long extractEmpresaId(String token) {
+        Object value = extractAllClaims(token).get(CLAIM_EMPRESA_ID);
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Number number) {
+            return number.longValue();
+        }
+        return Long.valueOf(value.toString());
     }
 
     public boolean isTokenValid(String token, AuthenticatedUser authenticatedUser) {

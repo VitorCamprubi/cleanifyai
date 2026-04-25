@@ -11,14 +11,18 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.cleanifyai.api.domain.entity.Agendamento;
 import com.cleanifyai.api.domain.entity.Cliente;
+import com.cleanifyai.api.domain.entity.Empresa;
 import com.cleanifyai.api.domain.entity.Servico;
 import com.cleanifyai.api.domain.entity.User;
+import com.cleanifyai.api.domain.entity.Veiculo;
 import com.cleanifyai.api.domain.enums.StatusAgendamento;
 import com.cleanifyai.api.domain.enums.UserRole;
 import com.cleanifyai.api.repository.AgendamentoRepository;
 import com.cleanifyai.api.repository.ClienteRepository;
+import com.cleanifyai.api.repository.EmpresaRepository;
 import com.cleanifyai.api.repository.ServicoRepository;
 import com.cleanifyai.api.repository.UserRepository;
+import com.cleanifyai.api.repository.VeiculoRepository;
 
 @Configuration
 public class SeedDataConfig {
@@ -26,19 +30,24 @@ public class SeedDataConfig {
     @Bean
     CommandLineRunner loadSeedData(
             AppProperties appProperties,
+            EmpresaRepository empresaRepository,
             UserRepository userRepository,
             ClienteRepository clienteRepository,
             ServicoRepository servicoRepository,
             AgendamentoRepository agendamentoRepository,
+            VeiculoRepository veiculoRepository,
             PasswordEncoder passwordEncoder) {
         return args -> {
             if (!appProperties.getSeed().isEnabled()) {
                 return;
             }
 
+            Empresa empresa = obterOuCriarEmpresaPadrao(empresaRepository);
+
             criarUsuarioPadraoSeNecessario(
                     userRepository,
                     passwordEncoder,
+                    empresa.getId(),
                     "Administrador CleanifyAI",
                     "admin@cleanifyai.local",
                     "admin123",
@@ -46,6 +55,7 @@ public class SeedDataConfig {
             criarUsuarioPadraoSeNecessario(
                     userRepository,
                     passwordEncoder,
+                    empresa.getId(),
                     "Atendente CleanifyAI",
                     "atendente@cleanifyai.local",
                     "atendente123",
@@ -56,7 +66,7 @@ public class SeedDataConfig {
             }
 
             Cliente cliente1 = new Cliente();
-            cliente1.setEmpresaId(1L);
+            cliente1.setEmpresaId(empresa.getId());
             cliente1.setNome("Carlos Almeida");
             cliente1.setTelefone("5511999990001");
             cliente1.setEmail("carlos@cliente.com");
@@ -65,7 +75,7 @@ public class SeedDataConfig {
             cliente1.setObservacoes("Cliente recorrente de higienizacao interna");
 
             Cliente cliente2 = new Cliente();
-            cliente2.setEmpresaId(1L);
+            cliente2.setEmpresaId(empresa.getId());
             cliente2.setNome("Mariana Costa");
             cliente2.setTelefone("5511999990002");
             cliente2.setEmail("mariana@cliente.com");
@@ -76,8 +86,30 @@ public class SeedDataConfig {
             cliente1 = clienteRepository.save(cliente1);
             cliente2 = clienteRepository.save(cliente2);
 
+            Veiculo veiculo1 = new Veiculo();
+            veiculo1.setEmpresaId(empresa.getId());
+            veiculo1.setClienteId(cliente1.getId());
+            veiculo1.setMarca("Honda");
+            veiculo1.setModelo("Civic");
+            veiculo1.setPlaca("ABC1D23");
+            veiculo1.setCor("Prata");
+            veiculo1.setAnoModelo(2021);
+            veiculo1.setAtivo(true);
+            veiculoRepository.save(veiculo1);
+
+            Veiculo veiculo2 = new Veiculo();
+            veiculo2.setEmpresaId(empresa.getId());
+            veiculo2.setClienteId(cliente2.getId());
+            veiculo2.setMarca("Jeep");
+            veiculo2.setModelo("Compass");
+            veiculo2.setPlaca("EFG4H56");
+            veiculo2.setCor("Branco");
+            veiculo2.setAnoModelo(2023);
+            veiculo2.setAtivo(true);
+            veiculoRepository.save(veiculo2);
+
             Servico servico1 = new Servico();
-            servico1.setEmpresaId(1L);
+            servico1.setEmpresaId(empresa.getId());
             servico1.setNome("Lavagem Premium");
             servico1.setDescricao("Lavagem externa completa com acabamento premium");
             servico1.setPreco(new BigDecimal("89.90"));
@@ -85,7 +117,7 @@ public class SeedDataConfig {
             servico1.setAtivo(true);
 
             Servico servico2 = new Servico();
-            servico2.setEmpresaId(1L);
+            servico2.setEmpresaId(empresa.getId());
             servico2.setNome("Vitrificacao de Pintura");
             servico2.setDescricao("Protecao de pintura com foco em brilho e durabilidade");
             servico2.setPreco(new BigDecimal("599.00"));
@@ -96,7 +128,7 @@ public class SeedDataConfig {
             servico2 = servicoRepository.save(servico2);
 
             Agendamento agendamento1 = new Agendamento();
-            agendamento1.setEmpresaId(1L);
+            agendamento1.setEmpresaId(empresa.getId());
             agendamento1.setCliente(cliente1);
             agendamento1.setServico(servico1);
             agendamento1.setData(LocalDate.now());
@@ -105,7 +137,7 @@ public class SeedDataConfig {
             agendamento1.setObservacoes("Confirmado por telefone");
 
             Agendamento agendamento2 = new Agendamento();
-            agendamento2.setEmpresaId(1L);
+            agendamento2.setEmpresaId(empresa.getId());
             agendamento2.setCliente(cliente2);
             agendamento2.setServico(servico2);
             agendamento2.setData(LocalDate.now().plusDays(1));
@@ -118,9 +150,24 @@ public class SeedDataConfig {
         };
     }
 
+    private Empresa obterOuCriarEmpresaPadrao(EmpresaRepository empresaRepository) {
+        return empresaRepository.findAll().stream()
+                .findFirst()
+                .orElseGet(() -> {
+                    Empresa empresa = new Empresa();
+                    empresa.setNome("CleanifyAI Demo");
+                    empresa.setCnpj(null);
+                    empresa.setEmail("contato@cleanifyai.local");
+                    empresa.setTelefone("5511999990000");
+                    empresa.setAtiva(true);
+                    return empresaRepository.save(empresa);
+                });
+    }
+
     private void criarUsuarioPadraoSeNecessario(
             UserRepository userRepository,
             PasswordEncoder passwordEncoder,
+            Long empresaId,
             String nome,
             String email,
             String senha,
@@ -130,6 +177,7 @@ public class SeedDataConfig {
         }
 
         User user = new User();
+        user.setEmpresaId(empresaId);
         user.setNome(nome);
         user.setEmail(email);
         user.setSenha(passwordEncoder.encode(senha));
@@ -138,4 +186,3 @@ public class SeedDataConfig {
         userRepository.save(user);
     }
 }
-
