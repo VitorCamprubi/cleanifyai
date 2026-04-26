@@ -2,6 +2,21 @@ export type TipoLancamento = 'ENTRADA' | 'SAIDA';
 
 export type FormaPagamento = 'DINHEIRO' | 'PIX' | 'DEBITO' | 'CREDITO' | 'BOLETO' | 'OUTROS';
 
+export type TipoCategoria = 'RECEITA' | 'DESPESA' | 'AMBOS';
+
+export interface CategoriaFinanceiraRequest {
+  nome: string;
+  tipo: TipoCategoria;
+  cor?: string | null;
+}
+
+export interface CategoriaFinanceira {
+  id: number;
+  nome: string;
+  tipo: TipoCategoria;
+  cor?: string | null;
+}
+
 export interface LancamentoRequest {
   tipo: TipoLancamento;
   valor: number;
@@ -9,6 +24,7 @@ export interface LancamentoRequest {
   dataLancamento: string; // yyyy-MM-dd
   descricao: string;
   ordemId?: number | null;
+  categoriaId?: number | null;
 }
 
 export interface Lancamento {
@@ -19,6 +35,9 @@ export interface Lancamento {
   dataLancamento: string;
   descricao: string;
   ordemId?: number | null;
+  categoriaId?: number | null;
+  categoriaNome?: string | null;
+  categoriaCor?: string | null;
   registradoEm: string;
 }
 
@@ -60,3 +79,11 @@ export const TIPO_LANCAMENTO_LABEL: Record<TipoLancamento, string> = {
   ENTRADA: 'Entrada',
   SAIDA: 'Saida'
 };
+
+export const TIPO_CATEGORIA_LABEL: Record<TipoCategoria, string> = {
+  RECEITA: 'Receita',
+  DESPESA: 'Despesa',
+  AMBOS: 'Ambos'
+};
+
+export const TIPO_CATEGORIA_OPTIONS: TipoCategoria[] = ['RECEITA', 'DESPESA', 'AMBOS'];

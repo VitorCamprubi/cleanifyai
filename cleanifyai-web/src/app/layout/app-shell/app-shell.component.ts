@@ -28,10 +28,12 @@ export class AppShellComponent implements OnInit {
   readonly navItems: NavItem[] = [
     { label: 'Dashboard', route: '/dashboard', caption: 'Resumo da operacao' },
     { label: 'Clientes', route: '/clientes', caption: 'CRM operacional basico' },
+    { label: 'Veiculos', route: '/veiculos', caption: 'Frota dos clientes' },
     { label: 'Servicos', route: '/servicos', caption: 'Catalogo e precificacao' },
     { label: 'Agendamentos', route: '/agendamentos', caption: 'Agenda e status' },
     { label: 'Ordens de Servico', route: '/ordens', caption: 'OS e execucao' },
-    { label: 'Financeiro', route: '/financeiro', caption: 'Caixa e lancamentos' }
+    { label: 'Financeiro', route: '/financeiro', caption: 'Caixa e lancamentos' },
+    { label: 'Categorias', route: '/financeiro/categorias', caption: 'Receita e despesa' }
   ];
 
   apiOnline = false;

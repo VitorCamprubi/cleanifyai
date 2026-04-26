@@ -13,11 +13,13 @@ import {
   StatusOrdem
 } from '../../../core/models/ordem.model';
 import { Servico } from '../../../core/models/servico.model';
+import { Veiculo } from '../../../core/models/veiculo.model';
 import { ClientesApiService } from '../../../core/services/clientes-api.service';
 import { HttpErrorService } from '../../../core/services/http-error.service';
 import { OrdensApiService } from '../../../core/services/ordens-api.service';
 import { ServicosApiService } from '../../../core/services/servicos-api.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { VeiculosApiService } from '../../../core/services/veiculos-api.service';
 
 @Component({
   selector: 'app-ordens-page',
@@ -31,6 +33,7 @@ export class OrdensPageComponent implements OnInit {
   private readonly ordensApi = inject(OrdensApiService);
   private readonly clientesApi = inject(ClientesApiService);
   private readonly servicosApi = inject(ServicosApiService);
+  private readonly veiculosApi = inject(VeiculosApiService);
   private readonly httpErrorService = inject(HttpErrorService);
   private readonly toastService = inject(ToastService);
 
@@ -46,6 +49,7 @@ export class OrdensPageComponent implements OnInit {
 
   readonly form = this.fb.nonNullable.group({
     clienteId: [0, [Validators.required, Validators.min(1)]],
+    veiculoId: [null as number | null],
     observacoes: ['', Validators.maxLength(500)],
     itens: this.fb.array([] as FormGroup[])
   });
@@ -53,6 +57,7 @@ export class OrdensPageComponent implements OnInit {
   ordens: OrdemServico[] = [];
   clientes: Cliente[] = [];
   servicos: Servico[] = [];
+  veiculosDoCliente: Veiculo[] = [];
 
   filtroAtual: StatusOrdem | '' = '';
   carregando = false;
@@ -63,6 +68,30 @@ export class OrdensPageComponent implements OnInit {
 
   ngOnInit(): void {
     this.carregarDadosIniciais();
+    this.form.controls.clienteId.valueChanges.subscribe((clienteId) => {
+      this.carregarVeiculosDoCliente(Number(clienteId));
+    });
+  }
+
+  private carregarVeiculosDoCliente(clienteId: number): void {
+    if (!clienteId || clienteId <= 0) {
+      this.veiculosDoCliente = [];
+      this.form.patchValue({ veiculoId: null }, { emitEvent: false });
+      return;
+    }
+    this.veiculosApi.listar(clienteId).subscribe({
+      next: (veiculos) => {
+        this.veiculosDoCliente = veiculos;
+        // Se o veiculo atualmente selecionado nao pertence a este cliente, limpa.
+        const atual = this.form.controls.veiculoId.value;
+        if (atual && !veiculos.some((v) => v.id === atual)) {
+          this.form.patchValue({ veiculoId: null }, { emitEvent: false });
+        }
+      },
+      error: () => {
+        this.veiculosDoCliente = [];
+      }
+    });
   }
 
   get itensFormArray(): FormArray<FormGroup> {
@@ -189,6 +218,7 @@ export class OrdensPageComponent implements OnInit {
     this.itensFormArray.clear();
     this.form.patchValue({
       clienteId: ordem.clienteId,
+      veiculoId: ordem.veiculoId ?? null,
       observacoes: ordem.observacoes ?? ''
     });
 
@@ -210,9 +240,11 @@ export class OrdensPageComponent implements OnInit {
     this.itensFormArray.clear();
     this.form.reset({
       clienteId: 0,
+      veiculoId: null,
       observacoes: '',
       itens: []
     });
+    this.veiculosDoCliente = [];
   }
 
   acoesProximas(status: StatusOrdem): StatusOrdem[] {
@@ -272,6 +304,7 @@ export class OrdensPageComponent implements OnInit {
 
     return {
       clienteId: Number(value.clienteId),
+      veiculoId: value.veiculoId ? Number(value.veiculoId) : null,
       observacoes: this.normalizar(value.observacoes),
       itens
     };

@@ -15,5 +15,8 @@ public record LancamentoResponse(
         LocalDate dataLancamento,
         String descricao,
         Long ordemId,
+        Long categoriaId,
+        String categoriaNome,
+        String categoriaCor,
         Instant registradoEm) {
 }

@@ -28,10 +28,17 @@ export interface AgendamentoServicoResumo {
   duracaoMinutos: number;
 }
 
+export interface AgendamentoVeiculoResumo {
+  id: number;
+  descricao: string;
+  placa: string | null;
+}
+
 export interface Agendamento {
   id: number;
   cliente: AgendamentoClienteResumo;
   servico: AgendamentoServicoResumo;
+  veiculo: AgendamentoVeiculoResumo | null;
   data: string;
   horario: string;
   status: StatusAgendamento;
@@ -41,6 +48,7 @@ export interface Agendamento {
 export interface AgendamentoPayload {
   clienteId: number;
   servicoId: number;
+  veiculoId?: number | null;
   data: string;
   horario: string;
   status: StatusAgendamento;

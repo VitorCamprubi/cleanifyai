@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 
 import {
+  CategoriaFinanceira,
   FORMA_PAGAMENTO_LABEL,
   FORMA_PAGAMENTO_OPTIONS,
   FormaPagamento,
@@ -52,12 +53,14 @@ export class FinanceiroPageComponent implements OnInit {
     formaPagamento: ['DINHEIRO' as FormaPagamento, Validators.required],
     dataLancamento: [this.hoje, Validators.required],
     descricao: ['', [Validators.required, Validators.maxLength(200)]],
-    ordemId: [null as number | null]
+    ordemId: [null as number | null],
+    categoriaId: [null as number | null]
   });
 
   resumo: ResumoFinanceiro | null = null;
   lancamentos: Lancamento[] = [];
   ordens: OrdemServico[] = [];
+  categorias: CategoriaFinanceira[] = [];
 
   carregando = false;
   salvando = false;
@@ -85,18 +88,28 @@ export class FinanceiroPageComponent implements OnInit {
     forkJoin({
       lancamentos: this.api.listar(inicio, fim),
       resumo: this.api.resumo(inicio, fim),
-      ordens: this.ordensApi.listar()
+      ordens: this.ordensApi.listar(),
+      categorias: this.api.listarCategorias()
     }).subscribe({
-      next: ({ lancamentos, resumo, ordens }) => {
+      next: ({ lancamentos, resumo, ordens, categorias }) => {
         this.lancamentos = lancamentos;
         this.resumo = resumo;
         this.ordens = ordens.filter((o) => o.status === 'CONCLUIDA' || o.status === 'ENTREGUE' || o.status === 'EM_EXECUCAO');
+        this.categorias = categorias;
         this.carregando = false;
       },
       error: (error) => {
         this.erro = this.httpErrorService.obterMensagem(error, 'Nao foi possivel carregar o financeiro.');
         this.carregando = false;
       }
+    });
+  }
+
+  categoriasParaTipo(): CategoriaFinanceira[] {
+    const tipo = this.lancamentoForm.controls.tipo.value;
+    return this.categorias.filter((c) => {
+      if (c.tipo === 'AMBOS') return true;
+      return tipo === 'ENTRADA' ? c.tipo === 'RECEITA' : c.tipo === 'DESPESA';
     });
   }
 
@@ -134,7 +147,8 @@ export class FinanceiroPageComponent implements OnInit {
       formaPagamento: value.formaPagamento,
       dataLancamento: value.dataLancamento,
       descricao: value.descricao.trim(),
-      ordemId: value.ordemId ? Number(value.ordemId) : null
+      ordemId: value.ordemId ? Number(value.ordemId) : null,
+      categoriaId: value.categoriaId ? Number(value.categoriaId) : null
     };
 
     this.salvando = true;
@@ -150,7 +164,8 @@ export class FinanceiroPageComponent implements OnInit {
           formaPagamento: 'DINHEIRO',
           dataLancamento: this.hoje,
           descricao: '',
-          ordemId: null
+          ordemId: null,
+          categoriaId: null
         });
         this.carregar();
       },

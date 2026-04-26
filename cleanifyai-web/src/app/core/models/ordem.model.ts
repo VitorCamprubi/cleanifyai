@@ -19,6 +19,7 @@ export interface ItemOrdem {
 
 export interface OrdemServicoRequest {
   clienteId: number;
+  veiculoId?: number | null;
   agendamentoId?: number | null;
   observacoes?: string | null;
   itens: ItemOrdemRequest[];
@@ -28,6 +29,9 @@ export interface OrdemServico {
   id: number;
   clienteId: number;
   clienteNome: string;
+  veiculoId?: number | null;
+  veiculoDescricao?: string | null;
+  veiculoPlaca?: string | null;
   clientePlaca?: string | null;
   clienteVeiculo?: string | null;
   agendamentoId?: number | null;

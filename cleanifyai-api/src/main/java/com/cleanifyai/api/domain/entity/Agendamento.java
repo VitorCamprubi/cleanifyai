@@ -33,6 +33,10 @@ public class Agendamento extends EntidadeTenantBase {
     @JoinColumn(name = "servico_id", nullable = false)
     private Servico servico;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "veiculo_id")
+    private Veiculo veiculo;
+
     @Column(nullable = false)
     private LocalDate data;
 
@@ -68,6 +72,14 @@ public class Agendamento extends EntidadeTenantBase {
 
     public void setServico(Servico servico) {
         this.servico = servico;
+    }
+
+    public Veiculo getVeiculo() {
+        return veiculo;
+    }
+
+    public void setVeiculo(Veiculo veiculo) {
+        this.veiculo = veiculo;
     }
 
     public LocalDate getData() {

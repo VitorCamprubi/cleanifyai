@@ -35,6 +35,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/clientes/pages/clientes-page.component').then((m) => m.ClientesPageComponent)
       },
       {
+        path: 'veiculos',
+        loadComponent: () => import('./features/veiculos/pages/veiculos-page.component').then((m) => m.VeiculosPageComponent)
+      },
+      {
         path: 'servicos',
         loadComponent: () => import('./features/servicos/pages/servicos-page.component').then((m) => m.ServicosPageComponent)
       },
@@ -49,6 +53,10 @@ export const routes: Routes = [
       {
         path: 'financeiro',
         loadComponent: () => import('./features/financeiro/pages/financeiro-page.component').then((m) => m.FinanceiroPageComponent)
+      },
+      {
+        path: 'financeiro/categorias',
+        loadComponent: () => import('./features/financeiro/pages/categorias-page.component').then((m) => m.CategoriasPageComponent)
       }
     ]
   },

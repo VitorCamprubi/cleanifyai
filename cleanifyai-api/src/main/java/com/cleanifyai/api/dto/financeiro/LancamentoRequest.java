@@ -24,5 +24,6 @@ public record LancamentoRequest(
         @NotBlank(message = "Descricao e obrigatoria")
         @Size(max = 200)
         String descricao,
-        Long ordemId) {
+        Long ordemId,
+        Long categoriaId) {
 }

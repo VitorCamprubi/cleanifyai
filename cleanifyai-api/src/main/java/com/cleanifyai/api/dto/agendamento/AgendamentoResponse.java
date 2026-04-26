@@ -9,6 +9,7 @@ public record AgendamentoResponse(
         Long id,
         ClienteResumoResponse cliente,
         ServicoResumoResponse servico,
+        VeiculoResumoResponse veiculo,
         LocalDate data,
         LocalTime horario,
         StatusAgendamento status,

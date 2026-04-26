@@ -51,6 +51,16 @@
         </label>
 
         <label>
+          <span>Veiculo (opcional)</span>
+          <select formControlName="veiculoId" [disabled]="veiculosDoCliente.length === 0">
+            <option [ngValue]="null">{{ veiculosDoCliente.length === 0 ? 'Selecione um cliente primeiro' : 'Sem veiculo vinculado' }}</option>
+            @for (veiculo of veiculosDoCliente; track veiculo.id) {
+              <option [ngValue]="veiculo.id">{{ veiculo.marca }} {{ veiculo.modelo }} - {{ veiculo.placa || 'sem placa' }}</option>
+            }
+          </select>
+        </label>
+
+        <label>
           <span>Data</span>
           <input type="date" formControlName="data" [attr.min]="dataMinima" [class.input-invalid]="campoInvalido('data')" />
           @if (campoInvalido('data')) {
@@ -128,7 +138,15 @@
               <tr>
                 <td>
                   <strong>{{ agendamento.cliente.nome }}</strong>
-                  <span>{{ agendamento.cliente.veiculo || 'Veiculo nao informado' }}</span>
+                  <span>
+                    @if (agendamento.veiculo) {
+                      {{ agendamento.veiculo.descricao }}{{ agendamento.veiculo.placa ? ' · ' + agendamento.veiculo.placa : '' }}
+                    } @else if (agendamento.cliente.veiculo) {
+                      {{ agendamento.cliente.veiculo }}{{ agendamento.cliente.placa ? ' · ' + agendamento.cliente.placa : '' }}
+                    } @else {
+                      Veiculo nao informado
+                    }
+                  </span>
                 </td>
                 <td>
                   <strong>{{ agendamento.servico.nome }}</strong>

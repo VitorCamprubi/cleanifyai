@@ -45,6 +45,9 @@ public class Lancamento extends EntidadeTenantBase {
     @Column(name = "ordem_id")
     private Long ordemId;
 
+    @Column(name = "categoria_id")
+    private Long categoriaId;
+
     @Column(name = "registrado_em", nullable = false)
     private Instant registradoEm;
 
@@ -112,6 +115,14 @@ public class Lancamento extends EntidadeTenantBase {
 
     public void setOrdemId(Long ordemId) {
         this.ordemId = ordemId;
+    }
+
+    public Long getCategoriaId() {
+        return categoriaId;
+    }
+
+    public void setCategoriaId(Long categoriaId) {
+        this.categoriaId = categoriaId;
     }
 
     public Instant getRegistradoEm() {

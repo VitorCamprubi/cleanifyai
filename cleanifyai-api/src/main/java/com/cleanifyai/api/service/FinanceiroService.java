@@ -12,6 +12,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.cleanifyai.api.domain.entity.CategoriaFinanceira;
 import com.cleanifyai.api.domain.entity.Lancamento;
 import com.cleanifyai.api.domain.entity.OrdemServico;
 import com.cleanifyai.api.domain.enums.FormaPagamento;
@@ -30,12 +31,15 @@ public class FinanceiroService {
 
     private final LancamentoRepository lancamentoRepository;
     private final OrdemServicoService ordemServicoService;
+    private final CategoriaFinanceiraService categoriaService;
 
     public FinanceiroService(
             LancamentoRepository lancamentoRepository,
-            OrdemServicoService ordemServicoService) {
+            OrdemServicoService ordemServicoService,
+            CategoriaFinanceiraService categoriaService) {
         this.lancamentoRepository = lancamentoRepository;
         this.ordemServicoService = ordemServicoService;
+        this.categoriaService = categoriaService;
     }
 
     @Transactional
@@ -54,6 +58,14 @@ public class FinanceiroService {
         if (request.ordemId() != null) {
             OrdemServico ordem = ordemServicoService.buscarEntidade(request.ordemId());
             lancamento.setOrdemId(ordem.getId());
+        }
+
+        if (request.categoriaId() != null) {
+            CategoriaFinanceira categoria = categoriaService.buscarEntidade(request.categoriaId());
+            if (!categoria.getTipo().aceitaTipoLancamento(request.tipo())) {
+                throw new BusinessException("Categoria " + categoria.getNome() + " nao aceita lancamentos do tipo " + request.tipo());
+            }
+            lancamento.setCategoriaId(categoria.getId());
         }
 
         return toResponse(lancamentoRepository.save(lancamento));
@@ -167,6 +179,18 @@ public class FinanceiroService {
     }
 
     private LancamentoResponse toResponse(Lancamento lancamento) {
+        String categoriaNome = null;
+        String categoriaCor = null;
+        if (lancamento.getCategoriaId() != null) {
+            try {
+                CategoriaFinanceira c = categoriaService.buscarEntidadeIncluindoInativos(lancamento.getCategoriaId());
+                categoriaNome = c.getNome();
+                categoriaCor = c.getCor();
+            } catch (Exception ignorada) {
+                // Categoria removida fisicamente: lancamento mantem o id mas sem dados resolvidos.
+            }
+        }
+
         return new LancamentoResponse(
                 lancamento.getId(),
                 lancamento.getTipo(),
@@ -175,6 +199,9 @@ public class FinanceiroService {
                 lancamento.getDataLancamento(),
                 lancamento.getDescricao(),
                 lancamento.getOrdemId(),
+                lancamento.getCategoriaId(),
+                categoriaNome,
+                categoriaCor,
                 lancamento.getRegistradoEm());
     }
 }

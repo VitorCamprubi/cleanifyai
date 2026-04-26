@@ -1,0 +1,107 @@
+<section class="categorias-page">
+  <header class="page-header">
+    <div>
+      <p class="page-eyebrow">Financeiro</p>
+      <h2>Categorias</h2>
+      <p>Organize entradas e saidas. Categoria do tipo "Ambos" pode ser usada em receita ou despesa.</p>
+    </div>
+  </header>
+
+  @if (erro) {
+    <div class="alert alert--error">{{ erro }}</div>
+  }
+
+  <div class="categorias-grid">
+    <article class="card form-card">
+      <header class="card-header">
+        <div>
+          <h3>{{ emEdicaoId ? 'Editar categoria' : 'Nova categoria' }}</h3>
+          <p>Defina nome, tipo e uma cor para destacar nos relatorios.</p>
+        </div>
+        @if (emEdicaoId !== null) {
+          <button type="button" class="button button--ghost" (click)="cancelarEdicao()">Cancelar</button>
+        }
+      </header>
+
+      <form [formGroup]="form" (ngSubmit)="salvar()" class="stack">
+        <label>
+          <span>Nome</span>
+          <input type="text" formControlName="nome" maxlength="80" placeholder="Ex: Lavagem premium" />
+        </label>
+
+        <div class="duas-colunas">
+          <label>
+            <span>Tipo</span>
+            <select formControlName="tipo">
+              @for (tipo of tipoOptions; track tipo) {
+                <option [value]="tipo">{{ tipoLabel[tipo] }}</option>
+              }
+            </select>
+          </label>
+
+          <label>
+            <span>Cor</span>
+            <input type="color" formControlName="cor" />
+          </label>
+        </div>
+
+        <button type="submit" class="button button--primary" [disabled]="salvando">
+          {{ salvando ? 'Salvando...' : (emEdicaoId ? 'Atualizar' : 'Cadastrar') }}
+        </button>
+      </form>
+    </article>
+
+    <article class="card list-card">
+      <header class="card-header">
+        <div>
+          <h3>Categorias cadastradas</h3>
+          <p>Filtre para focar em receitas ou despesas.</p>
+        </div>
+        <button type="button" class="button button--ghost" (click)="carregar()" [disabled]="carregando">
+          {{ carregando ? '...' : 'Atualizar' }}
+        </button>
+      </header>
+
+      <div class="filtros">
+        <button type="button" class="filtro-chip" [class.filtro-chip--ativo]="!filtroTipo" (click)="filtrarPorTipo(null)">Todas</button>
+        @for (tipo of tipoOptions; track tipo) {
+          <button type="button"
+                  class="filtro-chip"
+                  [class.filtro-chip--ativo]="filtroTipo === tipo"
+                  (click)="filtrarPorTipo(tipo)">
+            {{ tipoLabel[tipo] }}
+          </button>
+        }
+      </div>
+
+      @if (carregando) {
+        <p class="loading">Carregando...</p>
+      } @else if (categoriasFiltradas().length === 0) {
+        <p class="empty">Nenhuma categoria para este filtro.</p>
+      } @else {
+        <ul class="categorias-lista">
+          @for (categoria of categoriasFiltradas(); track categoria.id) {
+            <li class="categoria-card">
+              <div class="categoria-card__main">
+                <span class="categoria-card__cor" [style.background]="categoria.cor || '#666'"></span>
+                <div>
+                  <strong>{{ categoria.nome }}</strong>
+                  <small>{{ tipoLabel[categoria.tipo] }}</small>
+                </div>
+              </div>
+              <div class="categoria-card__acoes">
+                <button type="button" class="button button--small button--ghost" (click)="editar(categoria)">Editar</button>
+                <button type="button"
+                        class="button button--small button--danger"
+                        [disabled]="processandoId === categoria.id"
+                        (click)="excluir(categoria)">
+                  {{ processandoId === categoria.id ? '...' : 'Inativar' }}
+                </button>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </article>
+  </div>
+</section>

@@ -29,7 +29,17 @@
           <select formControlName="clienteId">
             <option [ngValue]="0" disabled>Selecione o cliente</option>
             @for (cliente of clientes; track cliente.id) {
-              <option [ngValue]="cliente.id">{{ cliente.nome }} - {{ cliente.placa || 'sem placa' }}</option>
+              <option [ngValue]="cliente.id">{{ cliente.nome }}</option>
+            }
+          </select>
+        </label>
+
+        <label>
+          <span>Veiculo (opcional)</span>
+          <select formControlName="veiculoId" [disabled]="veiculosDoCliente.length === 0">
+            <option [ngValue]="null">{{ veiculosDoCliente.length === 0 ? 'Selecione um cliente primeiro' : 'Sem veiculo vinculado' }}</option>
+            @for (veiculo of veiculosDoCliente; track veiculo.id) {
+              <option [ngValue]="veiculo.id">{{ veiculo.marca }} {{ veiculo.modelo }} - {{ veiculo.placa || 'sem placa' }}</option>
             }
           </select>
         </label>
@@ -128,7 +138,15 @@
                 <div>
                   <strong>OS #{{ ordem.id }}</strong>
                   <span class="ordem-card__cliente">{{ ordem.clienteNome }}</span>
-                  <small>{{ ordem.clienteVeiculo }} {{ ordem.clientePlaca ? '· ' + ordem.clientePlaca : '' }}</small>
+                  <small>
+                    @if (ordem.veiculoId) {
+                      {{ ordem.veiculoDescricao }}{{ ordem.veiculoPlaca ? ' · ' + ordem.veiculoPlaca : '' }}
+                    } @else if (ordem.clienteVeiculo || ordem.clientePlaca) {
+                      {{ ordem.clienteVeiculo }}{{ ordem.clientePlaca ? ' · ' + ordem.clientePlaca : '' }}
+                    } @else {
+                      sem veiculo vinculado
+                    }
+                  </small>
                 </div>
                 <span class="status-pill status-pill--{{ ordem.status | lowercase }}">{{ statusLabel[ordem.status] }}</span>
               </div>

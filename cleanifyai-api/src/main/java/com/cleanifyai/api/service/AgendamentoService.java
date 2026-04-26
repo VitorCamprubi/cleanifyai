@@ -12,12 +12,14 @@ import org.springframework.transaction.annotation.Transactional;
 import com.cleanifyai.api.domain.entity.Agendamento;
 import com.cleanifyai.api.domain.entity.Cliente;
 import com.cleanifyai.api.domain.entity.Servico;
+import com.cleanifyai.api.domain.entity.Veiculo;
 import com.cleanifyai.api.domain.enums.StatusAgendamento;
 import com.cleanifyai.api.dto.agendamento.AgendamentoRequest;
 import com.cleanifyai.api.dto.agendamento.AgendamentoResponse;
 import com.cleanifyai.api.dto.agendamento.AtualizarStatusAgendamentoRequest;
 import com.cleanifyai.api.dto.agendamento.ClienteResumoResponse;
 import com.cleanifyai.api.dto.agendamento.ServicoResumoResponse;
+import com.cleanifyai.api.dto.agendamento.VeiculoResumoResponse;
 import com.cleanifyai.api.exception.BusinessException;
 import com.cleanifyai.api.exception.ResourceNotFoundException;
 import com.cleanifyai.api.integration.whatsapp.NotificadorWhatsApp;
@@ -30,16 +32,19 @@ public class AgendamentoService {
     private final AgendamentoRepository agendamentoRepository;
     private final ClienteService clienteService;
     private final ServicoService servicoService;
+    private final VeiculoService veiculoService;
     private final NotificadorWhatsApp notificadorWhatsApp;
 
     public AgendamentoService(
             AgendamentoRepository agendamentoRepository,
             ClienteService clienteService,
             ServicoService servicoService,
+            VeiculoService veiculoService,
             NotificadorWhatsApp notificadorWhatsApp) {
         this.agendamentoRepository = agendamentoRepository;
         this.clienteService = clienteService;
         this.servicoService = servicoService;
+        this.veiculoService = veiculoService;
         this.notificadorWhatsApp = notificadorWhatsApp;
     }
 
@@ -126,6 +131,16 @@ public class AgendamentoService {
         agendamento.setHorario(request.horario());
         agendamento.setStatus(request.status() != null ? request.status() : StatusAgendamento.AGENDADO);
         agendamento.setObservacoes(normalizarTextoOpcional(request.observacoes()));
+
+        if (request.veiculoId() != null) {
+            Veiculo veiculo = veiculoService.buscarEntidade(request.veiculoId());
+            if (!veiculo.getClienteId().equals(cliente.getId())) {
+                throw new BusinessException("Veiculo nao pertence ao cliente informado");
+            }
+            agendamento.setVeiculo(veiculo);
+        } else {
+            agendamento.setVeiculo(null);
+        }
     }
 
     private void validarServicoAtivo(Servico servico) {
@@ -190,6 +205,14 @@ public class AgendamentoService {
     }
 
     private AgendamentoResponse toResponse(Agendamento agendamento) {
+        Veiculo veiculo = agendamento.getVeiculo();
+        VeiculoResumoResponse veiculoResumo = veiculo != null
+                ? new VeiculoResumoResponse(
+                        veiculo.getId(),
+                        (veiculo.getMarca() + " " + veiculo.getModelo()).trim(),
+                        veiculo.getPlaca())
+                : null;
+
         return new AgendamentoResponse(
                 agendamento.getId(),
                 new ClienteResumoResponse(
@@ -203,6 +226,7 @@ public class AgendamentoService {
                         agendamento.getServico().getNome(),
                         agendamento.getServico().getPreco(),
                         agendamento.getServico().getDuracaoMinutos()),
+                veiculoResumo,
                 agendamento.getData(),
                 agendamento.getHorario(),
                 agendamento.getStatus(),

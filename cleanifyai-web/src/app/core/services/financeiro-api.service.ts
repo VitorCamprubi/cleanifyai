@@ -3,7 +3,14 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
-import { Lancamento, LancamentoRequest, ResumoFinanceiro } from '../models/financeiro.model';
+import {
+  CategoriaFinanceira,
+  CategoriaFinanceiraRequest,
+  Lancamento,
+  LancamentoRequest,
+  ResumoFinanceiro,
+  TipoCategoria
+} from '../models/financeiro.model';
 
 @Injectable({ providedIn: 'root' })
 export class FinanceiroApiService {
@@ -24,6 +31,26 @@ export class FinanceiroApiService {
 
   estornar(id: number): Observable<void> {
     return this.http.delete<void>(`${this.endpoint}/lancamentos/${id}`);
+  }
+
+  listarCategorias(tipo?: TipoCategoria): Observable<CategoriaFinanceira[]> {
+    let params = new HttpParams();
+    if (tipo) {
+      params = params.set('tipo', tipo);
+    }
+    return this.http.get<CategoriaFinanceira[]>(`${this.endpoint}/categorias`, { params });
+  }
+
+  criarCategoria(payload: CategoriaFinanceiraRequest): Observable<CategoriaFinanceira> {
+    return this.http.post<CategoriaFinanceira>(`${this.endpoint}/categorias`, payload);
+  }
+
+  atualizarCategoria(id: number, payload: CategoriaFinanceiraRequest): Observable<CategoriaFinanceira> {
+    return this.http.put<CategoriaFinanceira>(`${this.endpoint}/categorias/${id}`, payload);
+  }
+
+  excluirCategoria(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.endpoint}/categorias/${id}`);
   }
 
   private buildParams(inicio?: string, fim?: string): HttpParams {

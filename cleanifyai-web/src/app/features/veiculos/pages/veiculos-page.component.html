@@ -1,0 +1,134 @@
+<section class="veiculos-page">
+  <header class="page-header">
+    <div>
+      <p class="page-eyebrow">Cadastros</p>
+      <h2>Veiculos</h2>
+      <p>Cada cliente pode ter varios veiculos. Vincule o veiculo a uma OS para manter o historico por carro.</p>
+    </div>
+  </header>
+
+  @if (erro) {
+    <div class="alert alert--error">{{ erro }}</div>
+  }
+
+  <div class="veiculos-grid">
+    <article class="card form-card">
+      <header class="card-header">
+        <div>
+          <h3>{{ veiculoEmEdicaoId ? 'Editar veiculo' : 'Novo veiculo' }}</h3>
+          <p>Marca, modelo e placa sao o minimo. Os demais campos ajudam no historico.</p>
+        </div>
+        @if (veiculoEmEdicaoId !== null) {
+          <button type="button" class="button button--ghost" (click)="cancelarEdicao()">Cancelar</button>
+        }
+      </header>
+
+      <form [formGroup]="form" (ngSubmit)="salvar()" class="stack">
+        <label>
+          <span>Cliente</span>
+          <select formControlName="clienteId" [class.input-invalid]="campoInvalido('clienteId')">
+            <option [ngValue]="0" disabled>Selecione o cliente</option>
+            @for (cliente of clientes; track cliente.id) {
+              <option [ngValue]="cliente.id">{{ cliente.nome }}</option>
+            }
+          </select>
+          @if (campoInvalido('clienteId')) {
+            <small class="field-error">Selecione um cliente.</small>
+          }
+        </label>
+
+        <div class="duas-colunas">
+          <label>
+            <span>Marca</span>
+            <input type="text" formControlName="marca" placeholder="Honda"
+                   [class.input-invalid]="campoInvalido('marca')" />
+          </label>
+          <label>
+            <span>Modelo</span>
+            <input type="text" formControlName="modelo" placeholder="Civic"
+                   [class.input-invalid]="campoInvalido('modelo')" />
+          </label>
+        </div>
+
+        <div class="tres-colunas">
+          <label>
+            <span>Placa</span>
+            <input type="text" formControlName="placa" placeholder="ABC1D23" maxlength="10" />
+          </label>
+          <label>
+            <span>Cor</span>
+            <input type="text" formControlName="cor" placeholder="Prata" />
+          </label>
+          <label>
+            <span>Ano</span>
+            <input type="number" formControlName="anoModelo" placeholder="2024" min="1900" />
+          </label>
+        </div>
+
+        <label>
+          <span>Observacoes</span>
+          <textarea formControlName="observacoes" rows="2" placeholder="Detalhes do veiculo, preferencias do cliente..."></textarea>
+        </label>
+
+        <button type="submit" class="button button--primary" [disabled]="salvando">
+          {{ salvando ? 'Salvando...' : (veiculoEmEdicaoId ? 'Atualizar' : 'Cadastrar') }}
+        </button>
+      </form>
+    </article>
+
+    <article class="card list-card">
+      <header class="card-header">
+        <div>
+          <h3>Veiculos cadastrados</h3>
+          <p>Use o filtro para focar nos veiculos de um cliente especifico.</p>
+        </div>
+        <button type="button" class="button button--ghost" (click)="recarregar()" [disabled]="carregando">
+          {{ carregando ? '...' : 'Atualizar' }}
+        </button>
+      </header>
+
+      <label class="filtro">
+        <span>Filtrar por cliente</span>
+        <select [value]="filtroClienteId ?? 0" (change)="filtrarPorCliente($any($event.target).value ? +$any($event.target).value : null)">
+          <option [ngValue]="0">Todos os clientes</option>
+          @for (cliente of clientes; track cliente.id) {
+            <option [ngValue]="cliente.id">{{ cliente.nome }}</option>
+          }
+        </select>
+      </label>
+
+      @if (carregando) {
+        <p class="loading">Carregando...</p>
+      } @else if (veiculos.length === 0) {
+        <p class="empty">Nenhum veiculo cadastrado para este filtro.</p>
+      } @else {
+        <ul class="veiculos-lista">
+          @for (veiculo of veiculos; track veiculo.id) {
+            <li class="veiculo-card">
+              <div class="veiculo-card__main">
+                <strong>{{ veiculo.marca }} {{ veiculo.modelo }}</strong>
+                <span class="veiculo-card__cliente">{{ veiculo.clienteNome }}</span>
+                <small>
+                  {{ veiculo.placa || 'sem placa' }}
+                  @if (veiculo.cor) { · {{ veiculo.cor }} }
+                  @if (veiculo.anoModelo) { · {{ veiculo.anoModelo }} }
+                </small>
+                @if (veiculo.observacoes) {
+                  <p class="veiculo-card__obs">{{ veiculo.observacoes }}</p>
+                }
+              </div>
+              <div class="veiculo-card__acoes">
+                <button type="button" class="button button--small button--ghost" (click)="editar(veiculo)">Editar</button>
+                <button type="button" class="button button--small button--danger"
+                        [disabled]="veiculoProcessandoId === veiculo.id"
+                        (click)="excluir(veiculo)">
+                  {{ veiculoProcessandoId === veiculo.id ? '...' : 'Inativar' }}
+                </button>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </article>
+  </div>
+</section>

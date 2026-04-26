@@ -10,14 +10,17 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.cleanifyai.api.domain.entity.Agendamento;
+import com.cleanifyai.api.domain.entity.CategoriaFinanceira;
 import com.cleanifyai.api.domain.entity.Cliente;
 import com.cleanifyai.api.domain.entity.Empresa;
 import com.cleanifyai.api.domain.entity.Servico;
 import com.cleanifyai.api.domain.entity.User;
 import com.cleanifyai.api.domain.entity.Veiculo;
 import com.cleanifyai.api.domain.enums.StatusAgendamento;
+import com.cleanifyai.api.domain.enums.TipoCategoria;
 import com.cleanifyai.api.domain.enums.UserRole;
 import com.cleanifyai.api.repository.AgendamentoRepository;
+import com.cleanifyai.api.repository.CategoriaFinanceiraRepository;
 import com.cleanifyai.api.repository.ClienteRepository;
 import com.cleanifyai.api.repository.EmpresaRepository;
 import com.cleanifyai.api.repository.ServicoRepository;
@@ -36,6 +39,7 @@ public class SeedDataConfig {
             ServicoRepository servicoRepository,
             AgendamentoRepository agendamentoRepository,
             VeiculoRepository veiculoRepository,
+            CategoriaFinanceiraRepository categoriaRepository,
             PasswordEncoder passwordEncoder) {
         return args -> {
             if (!appProperties.getSeed().isEnabled()) {
@@ -60,6 +64,15 @@ public class SeedDataConfig {
                     "atendente@cleanifyai.local",
                     "atendente123",
                     UserRole.ATENDENTE);
+
+            if (categoriaRepository.count() == 0) {
+                criarCategoriaPadrao(categoriaRepository, empresa.getId(), "Servicos", TipoCategoria.RECEITA, "#18E4D3");
+                criarCategoriaPadrao(categoriaRepository, empresa.getId(), "Produtos", TipoCategoria.RECEITA, "#1954FF");
+                criarCategoriaPadrao(categoriaRepository, empresa.getId(), "Material de limpeza", TipoCategoria.DESPESA, "#FF6B6E");
+                criarCategoriaPadrao(categoriaRepository, empresa.getId(), "Aluguel", TipoCategoria.DESPESA, "#FFC400");
+                criarCategoriaPadrao(categoriaRepository, empresa.getId(), "Salarios", TipoCategoria.DESPESA, "#FF8A00");
+                criarCategoriaPadrao(categoriaRepository, empresa.getId(), "Outros", TipoCategoria.AMBOS, "#A0AEC0");
+            }
 
             if (clienteRepository.count() > 0 || servicoRepository.count() > 0) {
                 return;
@@ -95,7 +108,7 @@ public class SeedDataConfig {
             veiculo1.setCor("Prata");
             veiculo1.setAnoModelo(2021);
             veiculo1.setAtivo(true);
-            veiculoRepository.save(veiculo1);
+            veiculo1 = veiculoRepository.save(veiculo1);
 
             Veiculo veiculo2 = new Veiculo();
             veiculo2.setEmpresaId(empresa.getId());
@@ -106,7 +119,7 @@ public class SeedDataConfig {
             veiculo2.setCor("Branco");
             veiculo2.setAnoModelo(2023);
             veiculo2.setAtivo(true);
-            veiculoRepository.save(veiculo2);
+            veiculo2 = veiculoRepository.save(veiculo2);
 
             Servico servico1 = new Servico();
             servico1.setEmpresaId(empresa.getId());
@@ -131,6 +144,7 @@ public class SeedDataConfig {
             agendamento1.setEmpresaId(empresa.getId());
             agendamento1.setCliente(cliente1);
             agendamento1.setServico(servico1);
+            agendamento1.setVeiculo(veiculo1);
             agendamento1.setData(LocalDate.now());
             agendamento1.setHorario(LocalTime.now().plusHours(2).withMinute(0).withSecond(0).withNano(0));
             agendamento1.setStatus(StatusAgendamento.CONFIRMADO);
@@ -140,6 +154,7 @@ public class SeedDataConfig {
             agendamento2.setEmpresaId(empresa.getId());
             agendamento2.setCliente(cliente2);
             agendamento2.setServico(servico2);
+            agendamento2.setVeiculo(veiculo2);
             agendamento2.setData(LocalDate.now().plusDays(1));
             agendamento2.setHorario(LocalTime.of(10, 30));
             agendamento2.setStatus(StatusAgendamento.AGENDADO);
@@ -162,6 +177,21 @@ public class SeedDataConfig {
                     empresa.setAtiva(true);
                     return empresaRepository.save(empresa);
                 });
+    }
+
+    private void criarCategoriaPadrao(
+            CategoriaFinanceiraRepository repository,
+            Long empresaId,
+            String nome,
+            TipoCategoria tipo,
+            String cor) {
+        CategoriaFinanceira c = new CategoriaFinanceira();
+        c.setEmpresaId(empresaId);
+        c.setNome(nome);
+        c.setTipo(tipo);
+        c.setCor(cor);
+        c.setAtivo(true);
+        repository.save(c);
     }
 
     private void criarUsuarioPadraoSeNecessario(

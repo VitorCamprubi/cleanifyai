@@ -106,6 +106,16 @@
         </div>
 
         <label>
+          <span>Categoria (opcional)</span>
+          <select formControlName="categoriaId">
+            <option [ngValue]="null">Sem categoria</option>
+            @for (categoria of categoriasParaTipo(); track categoria.id) {
+              <option [ngValue]="categoria.id">{{ categoria.nome }}</option>
+            }
+          </select>
+        </label>
+
+        <label>
           <span>OS vinculada (opcional)</span>
           <select formControlName="ordemId" (change)="aoSelecionarOrdem($event)">
             <option [ngValue]="null">Sem vinculo</option>
@@ -153,6 +163,12 @@
                       · OS #{{ lancamento.ordemId }}
                     }
                   </small>
+                  @if (lancamento.categoriaNome) {
+                    <span class="categoria-tag" [style.borderColor]="lancamento.categoriaCor || 'var(--color-muted)'">
+                      <span class="categoria-tag__dot" [style.background]="lancamento.categoriaCor || 'var(--color-muted)'"></span>
+                      {{ lancamento.categoriaNome }}
+                    </span>
+                  }
                 </div>
               </div>
               <div class="lancamento-row__right">

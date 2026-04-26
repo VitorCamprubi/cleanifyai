@@ -169,6 +169,25 @@
   font-size: 0.82rem;
 }
 
+.categoria-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.3rem;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid;
+  font-size: 0.72rem;
+  color: #f5fbff;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.categoria-tag__dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+}
+
 .lancamento-row__tipo {
   padding: 0.3rem 0.55rem;
   border-radius: 0.55rem;

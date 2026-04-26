@@ -14,6 +14,7 @@ public record AgendamentoRequest(
         Long clienteId,
         @NotNull(message = "Servico e obrigatorio")
         Long servicoId,
+        Long veiculoId,
         @NotNull(message = "Data e obrigatoria")
         @FutureOrPresent(message = "Data deve ser hoje ou futura")
         LocalDate data,
@@ -23,4 +24,3 @@ public record AgendamentoRequest(
         @Size(max = 500, message = "Observacoes deve ter ate 500 caracteres")
         String observacoes) {
 }
-

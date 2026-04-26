@@ -6,15 +6,17 @@ import { forkJoin } from 'rxjs';
 import { Agendamento, AgendamentoPayload, STATUS_AGENDAMENTO_OPTIONS, StatusAgendamento } from '../../../core/models/agendamento.model';
 import { Cliente } from '../../../core/models/cliente.model';
 import { Servico } from '../../../core/models/servico.model';
+import { Veiculo } from '../../../core/models/veiculo.model';
 import { AgendamentosApiService } from '../../../core/services/agendamentos-api.service';
 import { ClientesApiService } from '../../../core/services/clientes-api.service';
 import { DashboardRefreshService } from '../../../core/services/dashboard-refresh.service';
 import { HttpErrorService } from '../../../core/services/http-error.service';
 import { ServicosApiService } from '../../../core/services/servicos-api.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { VeiculosApiService } from '../../../core/services/veiculos-api.service';
 import { formatarStatusAgendamento } from '../../../core/utils/formatters';
 
-type AgendamentoFormField = 'clienteId' | 'servicoId' | 'data' | 'horario' | 'status' | 'observacoes';
+type AgendamentoFormField = 'clienteId' | 'servicoId' | 'veiculoId' | 'data' | 'horario' | 'status' | 'observacoes';
 type TipoAcaoAgenda = 'status' | 'cancelamento' | null;
 
 @Component({
@@ -29,6 +31,7 @@ export class AgendamentosPageComponent implements OnInit {
   private readonly agendamentosApi = inject(AgendamentosApiService);
   private readonly clientesApi = inject(ClientesApiService);
   private readonly servicosApi = inject(ServicosApiService);
+  private readonly veiculosApi = inject(VeiculosApiService);
   private readonly httpErrorService = inject(HttpErrorService);
   private readonly toastService = inject(ToastService);
   private readonly dashboardRefreshService = inject(DashboardRefreshService);
@@ -38,6 +41,7 @@ export class AgendamentosPageComponent implements OnInit {
   readonly form = this.fb.nonNullable.group({
     clienteId: [0, [Validators.required, Validators.min(1)]],
     servicoId: [0, [Validators.required, Validators.min(1)]],
+    veiculoId: [null as number | null],
     data: ['', Validators.required],
     horario: ['', Validators.required],
     status: ['AGENDADO' as StatusAgendamento, Validators.required],
@@ -47,6 +51,7 @@ export class AgendamentosPageComponent implements OnInit {
   clientes: Cliente[] = [];
   servicos: Servico[] = [];
   agendamentos: Agendamento[] = [];
+  veiculosDoCliente: Veiculo[] = [];
   carregando = false;
   salvando = false;
   erro = '';
@@ -56,6 +61,29 @@ export class AgendamentosPageComponent implements OnInit {
 
   ngOnInit(): void {
     this.carregarDadosIniciais();
+    this.form.controls.clienteId.valueChanges.subscribe((clienteId) => {
+      this.carregarVeiculosDoCliente(Number(clienteId));
+    });
+  }
+
+  private carregarVeiculosDoCliente(clienteId: number): void {
+    if (!clienteId || clienteId <= 0) {
+      this.veiculosDoCliente = [];
+      this.form.patchValue({ veiculoId: null }, { emitEvent: false });
+      return;
+    }
+    this.veiculosApi.listar(clienteId).subscribe({
+      next: (veiculos) => {
+        this.veiculosDoCliente = veiculos;
+        const atual = this.form.controls.veiculoId.value;
+        if (atual && !veiculos.some((v) => v.id === atual)) {
+          this.form.patchValue({ veiculoId: null }, { emitEvent: false });
+        }
+      },
+      error: () => {
+        this.veiculosDoCliente = [];
+      }
+    });
   }
 
   carregarDadosIniciais(exibirToastErro = false): void {
@@ -122,6 +150,7 @@ export class AgendamentosPageComponent implements OnInit {
     this.form.patchValue({
       clienteId: agendamento.cliente.id,
       servicoId: agendamento.servico.id,
+      veiculoId: agendamento.veiculo?.id ?? null,
       data: agendamento.data,
       horario: this.formatarHorarioParaInput(agendamento.horario),
       status: agendamento.status,
@@ -194,11 +223,13 @@ export class AgendamentosPageComponent implements OnInit {
     this.form.reset({
       clienteId: 0,
       servicoId: 0,
+      veiculoId: null,
       data: '',
       horario: '',
       status: 'AGENDADO',
       observacoes: ''
     });
+    this.veiculosDoCliente = [];
     this.form.markAsPristine();
     this.form.markAsUntouched();
   }
@@ -243,6 +274,7 @@ export class AgendamentosPageComponent implements OnInit {
     return {
       clienteId: Number(value.clienteId),
       servicoId: Number(value.servicoId),
+      veiculoId: value.veiculoId ? Number(value.veiculoId) : null,
       data: value.data,
       horario: value.horario,
       status: value.status,
