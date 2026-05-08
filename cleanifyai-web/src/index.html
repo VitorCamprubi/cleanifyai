@@ -1,13 +1,22 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
   <meta charset="utf-8">
-  <title>CleanifyAI</title>
+  <title>CleanifyAI - Software para esteticas automotivas</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="CleanifyAI: software para operacao, agendamento e relacionamento de esteticas automotivas.">
-  <meta name="theme-color" content="#050a1d">
-  <link rel="icon" type="image/svg+xml" href="brand/cleanifyai-logo-mark.svg">
+  <meta name="theme-color" content="#020b16">
+  <link rel="icon" type="image/png" href="/brand/cleanifyai-logo-mark-transparent.png">
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('cleanifyai.theme');
+        if (t !== 'light' && t !== 'dark') t = 'dark';
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (_) {}
+    })();
+  </script>
 </head>
 <body>
   <app-root></app-root>

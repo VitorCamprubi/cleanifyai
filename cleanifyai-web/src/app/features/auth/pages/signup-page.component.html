@@ -2,23 +2,23 @@
   <div class="auth-layout">
     <aside class="auth-showcase">
       <div class="auth-lockup">
-        <img [src]="logoMarkPath" alt="Simbolo CleanifyAI" class="auth-lockup__mark" />
+        <span class="brand-mark auth-lockup__mark" role="img" aria-label="CleanifyAI"></span>
         <div class="auth-lockup__text">
           <strong class="auth-lockup__name">Cleanify<span>AI</span></strong>
-          <small>Software para esteticas automotivas</small>
+          <small>App para esteticas automotivas</small>
         </div>
       </div>
 
       <div class="auth-showcase__copy">
-        <p class="eyebrow">Onboarding em 1 minuto</p>
-        <h1>Crie sua estetica no CleanifyAI e comece a operar agora.</h1>
-        <p>Seu cadastro gera automaticamente o ambiente isolado da empresa e o usuario administrador.</p>
+        <p class="eyebrow">Onboarding rapido</p>
+        <h1>Crie sua estetica e comece com uma interface pronta para operar.</h1>
+        <p>O cadastro prepara a empresa, o usuario administrador e o acesso inicial ao painel.</p>
       </div>
 
       <div class="auth-showcase__chips">
-        <span>Multi-tenant nativo</span>
-        <span>Dados isolados por empresa</span>
-        <span>Pronto para WhatsApp e IA</span>
+        <span>Multiempresa</span>
+        <span>Dados isolados</span>
+        <span>Pronto para agenda</span>
       </div>
     </aside>
 
@@ -80,7 +80,7 @@
 
           <label>
             <span>Email</span>
-            <input type="email" formControlName="email" placeholder="voce@empresa.com"
+            <input type="email" formControlName="email" placeholder="voce@empresa.com" autocomplete="email"
                    [class.input-invalid]="adminInvalido('email')" />
             @if (adminInvalido('email')) {
               <small class="field-error">Informe um email valido.</small>
@@ -89,7 +89,7 @@
 
           <label>
             <span>Senha</span>
-            <input type="password" formControlName="senha" placeholder="Minimo 6 caracteres"
+            <input type="password" formControlName="senha" placeholder="Minimo 6 caracteres" autocomplete="new-password"
                    [class.input-invalid]="adminInvalido('senha')" />
             @if (adminInvalido('senha')) {
               <small class="field-error">A senha deve ter entre 6 e 64 caracteres.</small>

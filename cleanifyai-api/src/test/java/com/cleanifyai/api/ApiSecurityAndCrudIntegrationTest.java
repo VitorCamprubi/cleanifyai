@@ -26,12 +26,14 @@ import com.cleanifyai.api.domain.entity.Cliente;
 import com.cleanifyai.api.domain.entity.Empresa;
 import com.cleanifyai.api.domain.entity.Servico;
 import com.cleanifyai.api.domain.entity.User;
+import com.cleanifyai.api.domain.entity.Veiculo;
 import com.cleanifyai.api.domain.enums.UserRole;
 import com.cleanifyai.api.repository.AgendamentoRepository;
 import com.cleanifyai.api.repository.ClienteRepository;
 import com.cleanifyai.api.repository.EmpresaRepository;
 import com.cleanifyai.api.repository.ServicoRepository;
 import com.cleanifyai.api.repository.UserRepository;
+import com.cleanifyai.api.repository.VeiculoRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -61,15 +63,20 @@ class ApiSecurityAndCrudIntegrationTest {
     private AgendamentoRepository agendamentoRepository;
 
     @Autowired
+    private VeiculoRepository veiculoRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     private Cliente clienteBase;
+    private Veiculo veiculoBase;
     private Servico servicoBase;
     private Empresa empresaPadrao;
 
     @BeforeEach
     void setUp() {
         agendamentoRepository.deleteAll();
+        veiculoRepository.deleteAll();
         clienteRepository.deleteAll();
         servicoRepository.deleteAll();
         userRepository.deleteAll();
@@ -88,9 +95,18 @@ class ApiSecurityAndCrudIntegrationTest {
         clienteBase.setNome("Cliente Base");
         clienteBase.setTelefone("5511999991111");
         clienteBase.setEmail("cliente.base@teste.local");
-        clienteBase.setVeiculo("Onix");
-        clienteBase.setPlaca("ABC1D23");
         clienteBase = clienteRepository.save(clienteBase);
+
+        veiculoBase = new Veiculo();
+        veiculoBase.setEmpresaId(empresaPadrao.getId());
+        veiculoBase.setClienteId(clienteBase.getId());
+        veiculoBase.setMarca("Chevrolet");
+        veiculoBase.setModelo("Onix");
+        veiculoBase.setPlaca("ABC1D23");
+        veiculoBase.setCor("Prata");
+        veiculoBase.setAnoModelo(2024);
+        veiculoBase.setAtivo(true);
+        veiculoBase = veiculoRepository.save(veiculoBase);
 
         servicoBase = new Servico();
         servicoBase.setEmpresaId(empresaPadrao.getId());
@@ -241,8 +257,6 @@ class ApiSecurityAndCrudIntegrationTest {
                                   "nome": "Novo Cliente",
                                   "telefone": "(11) 98888-7777",
                                   "email": "novo.cliente@teste.local",
-                                  "veiculo": "HB20",
-                                  "placa": "BRA2E19",
                                   "observacoes": "Cliente de teste"
                                 }
                                 """))
@@ -260,8 +274,6 @@ class ApiSecurityAndCrudIntegrationTest {
                                   "nome": "Novo Cliente Atualizado",
                                   "telefone": "(11) 97777-6666",
                                   "email": "novo.atualizado@teste.local",
-                                  "veiculo": "HB20S",
-                                  "placa": "BRA2E19",
                                   "observacoes": "Atualizado"
                                 }
                                 """))
@@ -287,12 +299,13 @@ class ApiSecurityAndCrudIntegrationTest {
                                 {
                                   "clienteId": %d,
                                   "servicoId": %d,
+                                  "veiculoId": %d,
                                   "data": "%s",
                                   "horario": "10:30:00",
                                   "status": "AGENDADO",
                                   "observacoes": "Agendamento inicial"
                                 }
-                                """.formatted(clienteBase.getId(), servicoBase.getId(), data)))
+                                """.formatted(clienteBase.getId(), servicoBase.getId(), veiculoBase.getId(), data)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.status").value("AGENDADO"))
                 .andReturn();
@@ -306,12 +319,13 @@ class ApiSecurityAndCrudIntegrationTest {
                                 {
                                   "clienteId": %d,
                                   "servicoId": %d,
+                                  "veiculoId": %d,
                                   "data": "%s",
                                   "horario": "11:15:00",
                                   "status": "AGENDADO",
                                   "observacoes": "Horario ajustado"
                                 }
-                                """.formatted(clienteBase.getId(), servicoBase.getId(), data.plusDays(1))))
+                                """.formatted(clienteBase.getId(), servicoBase.getId(), veiculoBase.getId(), data.plusDays(1))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.horario").value("11:15:00"));
 
@@ -345,6 +359,7 @@ class ApiSecurityAndCrudIntegrationTest {
                                 {
                                   "clienteId": %d,
                                   "servicoId": %d,
+                                  "veiculoId": %d,
                                   "data": "%s",
                                   "horario": "%s",
                                   "status": "AGENDADO",
@@ -353,6 +368,7 @@ class ApiSecurityAndCrudIntegrationTest {
                                 """.formatted(
                                 clienteBase.getId(),
                                 servicoBase.getId(),
+                                veiculoBase.getId(),
                                 LocalDate.now().minusDays(1),
                                 LocalTime.of(10, 0))))
                 .andExpect(status().isBadRequest())

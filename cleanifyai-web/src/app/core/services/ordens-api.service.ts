@@ -26,6 +26,10 @@ export class OrdensApiService {
     return this.http.post<OrdemServico>(this.endpoint, payload);
   }
 
+  criarAPartirDeAgendamento(agendamentoId: number): Observable<OrdemServico> {
+    return this.http.post<OrdemServico>(`${this.endpoint}/from-agendamento/${agendamentoId}`, {});
+  }
+
   atualizar(id: number, payload: OrdemServicoRequest): Observable<OrdemServico> {
     return this.http.put<OrdemServico>(`${this.endpoint}/${id}`, payload);
   }

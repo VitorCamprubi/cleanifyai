@@ -83,8 +83,6 @@ public class SeedDataConfig {
             cliente1.setNome("Carlos Almeida");
             cliente1.setTelefone("5511999990001");
             cliente1.setEmail("carlos@cliente.com");
-            cliente1.setVeiculo("Honda Civic");
-            cliente1.setPlaca("ABC1D23");
             cliente1.setObservacoes("Cliente recorrente de higienizacao interna");
 
             Cliente cliente2 = new Cliente();
@@ -92,8 +90,6 @@ public class SeedDataConfig {
             cliente2.setNome("Mariana Costa");
             cliente2.setTelefone("5511999990002");
             cliente2.setEmail("mariana@cliente.com");
-            cliente2.setVeiculo("Jeep Compass");
-            cliente2.setPlaca("EFG4H56");
             cliente2.setObservacoes("Prefere confirmacao no dia anterior");
 
             cliente1 = clienteRepository.save(cliente1);

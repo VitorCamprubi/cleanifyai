@@ -9,6 +9,7 @@ import jakarta.validation.constraints.Size;
 public record OrdemServicoRequest(
         @NotNull(message = "Cliente e obrigatorio")
         Long clienteId,
+        @NotNull(message = "Veiculo e obrigatorio")
         Long veiculoId,
         Long agendamentoId,
         @Size(max = 500)

@@ -26,27 +26,36 @@
       <form [formGroup]="form" (ngSubmit)="salvar()" class="stack">
         <label>
           <span>Cliente</span>
-          <select formControlName="clienteId">
+          <select formControlName="clienteId" [class.input-invalid]="campoInvalido('clienteId')">
             <option [ngValue]="0" disabled>Selecione o cliente</option>
             @for (cliente of clientes; track cliente.id) {
               <option [ngValue]="cliente.id">{{ cliente.nome }}</option>
             }
           </select>
+          @if (campoInvalido('clienteId')) {
+            <small class="field-error">{{ mensagemErro('clienteId') }}</small>
+          }
         </label>
 
         <label>
-          <span>Veiculo (opcional)</span>
-          <select formControlName="veiculoId" [disabled]="veiculosDoCliente.length === 0">
-            <option [ngValue]="null">{{ veiculosDoCliente.length === 0 ? 'Selecione um cliente primeiro' : 'Sem veiculo vinculado' }}</option>
+          <span>Veiculo</span>
+          <select formControlName="veiculoId" [disabled]="veiculosDoCliente.length === 0" [class.input-invalid]="campoInvalido('veiculoId')">
+            <option [ngValue]="0">{{ veiculosDoCliente.length === 0 ? 'Selecione um cliente com veiculo cadastrado' : 'Selecione o veiculo' }}</option>
             @for (veiculo of veiculosDoCliente; track veiculo.id) {
               <option [ngValue]="veiculo.id">{{ veiculo.marca }} {{ veiculo.modelo }} - {{ veiculo.placa || 'sem placa' }}</option>
             }
           </select>
+          @if (campoInvalido('veiculoId')) {
+            <small class="field-error">{{ mensagemErro('veiculoId') }}</small>
+          }
         </label>
 
         <label>
           <span>Observacoes</span>
-          <textarea formControlName="observacoes" rows="2" placeholder="Notas internas, instrucoes do cliente..."></textarea>
+          <textarea formControlName="observacoes" rows="2" placeholder="Notas internas, instrucoes do cliente..." [class.input-invalid]="campoInvalido('observacoes')"></textarea>
+          @if (campoInvalido('observacoes')) {
+            <small class="field-error">{{ mensagemErro('observacoes') }}</small>
+          }
         </label>
 
         <div class="itens-section">
@@ -141,8 +150,6 @@
                   <small>
                     @if (ordem.veiculoId) {
                       {{ ordem.veiculoDescricao }}{{ ordem.veiculoPlaca ? ' · ' + ordem.veiculoPlaca : '' }}
-                    } @else if (ordem.clienteVeiculo || ordem.clientePlaca) {
-                      {{ ordem.clienteVeiculo }}{{ ordem.clientePlaca ? ' · ' + ordem.clientePlaca : '' }}
                     } @else {
                       sem veiculo vinculado
                     }

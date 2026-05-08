@@ -15,6 +15,11 @@ public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> 
 
     List<Agendamento> findAllByEmpresaId(Long empresaId, Sort sort);
 
+    List<Agendamento> findAllByEmpresaIdAndDataAndStatusIn(
+            Long empresaId,
+            LocalDate data,
+            Collection<StatusAgendamento> status);
+
     Optional<Agendamento> findByIdAndEmpresaId(Long id, Long empresaId);
 
     long countByEmpresaIdAndData(Long empresaId, LocalDate data);

@@ -132,15 +132,12 @@ public class AgendamentoService {
         agendamento.setStatus(request.status() != null ? request.status() : StatusAgendamento.AGENDADO);
         agendamento.setObservacoes(normalizarTextoOpcional(request.observacoes()));
 
-        if (request.veiculoId() != null) {
-            Veiculo veiculo = veiculoService.buscarEntidade(request.veiculoId());
-            if (!veiculo.getClienteId().equals(cliente.getId())) {
-                throw new BusinessException("Veiculo nao pertence ao cliente informado");
-            }
-            agendamento.setVeiculo(veiculo);
-        } else {
-            agendamento.setVeiculo(null);
+        Veiculo veiculo = veiculoService.buscarEntidade(request.veiculoId());
+        if (!veiculo.getClienteId().equals(cliente.getId())) {
+            throw new BusinessException("Veiculo nao pertence ao cliente informado");
         }
+        agendamento.setVeiculo(veiculo);
+        validarConflitoAgenda(agendamento, servico);
     }
 
     private void validarServicoAtivo(Servico servico) {
@@ -171,6 +168,33 @@ public class AgendamentoService {
 
         if (data.isEqual(hoje) && horario.isBefore(LocalTime.now().withSecond(0).withNano(0))) {
             throw new BusinessException("Nao e possivel agendar horario passado para hoje");
+        }
+    }
+
+    private void validarConflitoAgenda(Agendamento atual, Servico servico) {
+        LocalTime inicio = atual.getHorario();
+        LocalTime fim = inicio.plusMinutes(servico.getDuracaoMinutos());
+        EnumSet<StatusAgendamento> statusBloqueadores = EnumSet.of(
+                StatusAgendamento.AGENDADO,
+                StatusAgendamento.CONFIRMADO,
+                StatusAgendamento.EM_ANDAMENTO);
+
+        List<Agendamento> agendamentosDoDia = agendamentoRepository.findAllByEmpresaIdAndDataAndStatusIn(
+                TenantContext.requireEmpresaId(),
+                atual.getData(),
+                statusBloqueadores);
+
+        for (Agendamento existente : agendamentosDoDia) {
+            if (atual.getId() != null && atual.getId().equals(existente.getId())) {
+                continue;
+            }
+
+            LocalTime existenteInicio = existente.getHorario();
+            LocalTime existenteFim = existenteInicio.plusMinutes(existente.getServico().getDuracaoMinutos());
+            boolean sobrepoe = inicio.isBefore(existenteFim) && fim.isAfter(existenteInicio);
+            if (sobrepoe) {
+                throw new BusinessException("Horario indisponivel: ja existe agendamento ativo neste intervalo");
+            }
         }
     }
 
@@ -218,9 +242,7 @@ public class AgendamentoService {
                 new ClienteResumoResponse(
                         agendamento.getCliente().getId(),
                         agendamento.getCliente().getNome(),
-                        agendamento.getCliente().getTelefone(),
-                        agendamento.getCliente().getVeiculo(),
-                        agendamento.getCliente().getPlaca()),
+                        agendamento.getCliente().getTelefone()),
                 new ServicoResumoResponse(
                         agendamento.getServico().getId(),
                         agendamento.getServico().getNome(),

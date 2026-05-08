@@ -22,8 +22,6 @@ export class LoginPageComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
-  readonly logoMarkPath = 'brand/cleanifyai-logo-mark.svg';
-
   readonly form = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
     senha: ['', [Validators.required, Validators.minLength(6)]]

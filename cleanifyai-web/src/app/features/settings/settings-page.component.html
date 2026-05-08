@@ -1,0 +1,98 @@
+<section class="settings-page">
+  <header class="page-header">
+    <div>
+      <p class="page-eyebrow">Sistema</p>
+      <h2>Ajustes</h2>
+      <p>Preferencias de interface, sessao e atalhos operacionais.</p>
+    </div>
+  </header>
+
+  <div class="settings-grid">
+    <article class="card">
+      <header class="card-header">
+        <div>
+          <h3>Conta</h3>
+          <p>Sessao autenticada no CleanifyAI.</p>
+        </div>
+      </header>
+      <div class="settings-list">
+        <div>
+          <span>Usuario</span>
+          <strong>{{ usuarioAtual?.nome }}</strong>
+        </div>
+        <div>
+          <span>Email</span>
+          <strong>{{ usuarioAtual?.email }}</strong>
+        </div>
+        <div>
+          <span>Perfil</span>
+          <strong>{{ usuarioAtual?.role === 'ADMIN' ? 'Administrador' : 'Atendente' }}</strong>
+        </div>
+      </div>
+      <button type="button" class="button button--danger" (click)="logout()">Sair da conta</button>
+    </article>
+
+    <article class="card">
+      <header class="card-header">
+        <div>
+          <h3>Aparencia</h3>
+          <p>Alterna entre os modos claro e escuro.</p>
+        </div>
+      </header>
+      <div class="settings-list">
+        <div>
+          <span>Tema atual</span>
+          <strong>{{ temaAtual === 'dark' ? 'Escuro' : 'Claro' }}</strong>
+        </div>
+      </div>
+      <button type="button" class="button" (click)="alternarTema()">
+        {{ temaAtual === 'dark' ? 'Usar modo claro' : 'Usar modo escuro' }}
+      </button>
+    </article>
+
+    <article class="card">
+      <header class="card-header">
+        <div>
+          <h3>Sincronizacao</h3>
+          <p>Confere a disponibilidade atual da API.</p>
+        </div>
+      </header>
+      <div class="settings-list">
+        <div>
+          <span>Status</span>
+          <strong>
+            @if (apiOnline === null) {
+              Nao verificado
+            } @else if (apiOnline) {
+              Online
+            } @else {
+              Offline
+            }
+          </strong>
+        </div>
+      </div>
+      <button type="button" class="button button--ghost" (click)="verificarApi()" [disabled]="verificandoApi">
+        {{ verificandoApi ? 'Verificando...' : 'Verificar API' }}
+      </button>
+    </article>
+
+    <article class="card">
+      <header class="card-header">
+        <div>
+          <h3>Atalhos</h3>
+          <p>Acesso rapido aos fluxos principais.</p>
+        </div>
+      </header>
+      <nav class="settings-shortcuts" aria-label="Atalhos do sistema">
+        <a routerLink="/dashboard">Dashboard</a>
+        <a routerLink="/clientes">Clientes</a>
+        <a routerLink="/veiculos">Veiculos</a>
+        <a routerLink="/agendamentos">Agenda</a>
+        <a routerLink="/ordens">Ordens</a>
+        <a routerLink="/servicos">Servicos</a>
+        <a routerLink="/financeiro">Financeiro</a>
+        <a routerLink="/financeiro/categorias">Categorias</a>
+      </nav>
+    </article>
+  </div>
+</section>

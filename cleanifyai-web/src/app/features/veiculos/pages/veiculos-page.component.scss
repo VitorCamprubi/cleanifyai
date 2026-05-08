@@ -1,72 +1,30 @@
 .veiculos-page {
   display: grid;
-  gap: 1.5rem;
-}
-
-.page-header h2 {
-  margin: 0;
-  font-family: var(--font-display);
-  font-size: 1.8rem;
-}
-
-.page-eyebrow {
-  margin: 0;
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  color: var(--color-muted);
-  font-size: 0.7rem;
-  font-weight: 700;
+  gap: 16px;
 }
 
 .veiculos-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
-  gap: 1.25rem;
+  gap: 16px;
   align-items: start;
-}
-
-.card {
-  background: linear-gradient(180deg, rgba(13, 24, 55, 0.94) 0%, rgba(9, 19, 46, 0.94) 100%);
-  border: 1px solid rgba(116, 152, 255, 0.16);
-  border-radius: 1.5rem;
-  padding: 1.5rem;
-  display: grid;
-  gap: 1rem;
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
-}
-
-.card-header h3 {
-  margin: 0;
-  font-family: var(--font-display);
-}
-
-.card-header p {
-  margin: 0.2rem 0 0;
-  color: var(--color-muted);
-  font-size: 0.92rem;
 }
 
 .duas-colunas {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.7rem;
+  gap: 10px;
 }
 
 .tres-colunas {
   display: grid;
   grid-template-columns: 1.5fr 1fr 1fr;
-  gap: 0.7rem;
+  gap: 10px;
 }
 
 .filtro {
   display: grid;
-  gap: 0.3rem;
+  gap: 4px;
   max-width: 22rem;
 }
 
@@ -75,62 +33,63 @@
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 0.7rem;
+  gap: 8px;
 }
 
 .veiculo-card {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 1rem;
-  padding: 0.95rem 1.1rem;
-  background: rgba(15, 28, 60, 0.55);
-  border: 1px solid rgba(116, 152, 255, 0.14);
-  border-radius: 0.95rem;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  min-width: 0;
+  transition: border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
+}
+
+.veiculo-card:hover {
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-xs);
 }
 
 .veiculo-card__main {
   display: grid;
-  gap: 0.2rem;
+  gap: 2px;
   min-width: 0;
 }
 
 .veiculo-card__main strong {
-  color: #f5fbff;
-  font-size: 1rem;
+  color: var(--color-text);
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .veiculo-card__cliente {
-  color: #dff5ff;
-  font-weight: 700;
-  font-size: 0.9rem;
+  color: var(--color-text);
+  font-weight: 500;
+  font-size: 13px;
 }
 
 .veiculo-card__main small {
-  color: var(--color-muted);
-  font-size: 0.82rem;
+  color: var(--color-text-muted);
+  font-size: 12px;
 }
 
 .veiculo-card__obs {
-  margin: 0.3rem 0 0;
-  padding: 0.4rem 0.6rem;
-  background: rgba(116, 152, 255, 0.08);
-  border-radius: 0.5rem;
-  font-size: 0.86rem;
-  color: var(--color-muted);
+  margin: 4px 0 0;
+  padding: 6px 10px;
+  background: var(--color-surface-muted);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  color: var(--color-text-muted);
 }
 
 .veiculo-card__acoes {
   display: flex;
-  gap: 0.4rem;
+  gap: 6px;
   flex-shrink: 0;
-}
-
-.empty,
-.loading {
-  margin: 0;
-  color: var(--color-muted);
-  font-style: italic;
 }
 
 @media (max-width: 1100px) {

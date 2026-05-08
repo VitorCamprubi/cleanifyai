@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { forkJoin } from 'rxjs';
 
 import { Cliente } from '../../../core/models/cliente.model';
@@ -21,6 +22,7 @@ export class VeiculosPageComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly api = inject(VeiculosApiService);
   private readonly clientesApi = inject(ClientesApiService);
+  private readonly route = inject(ActivatedRoute);
   private readonly httpErrorService = inject(HttpErrorService);
   private readonly toastService = inject(ToastService);
 
@@ -45,6 +47,11 @@ export class VeiculosPageComponent implements OnInit {
   erro = '';
 
   ngOnInit(): void {
+    const clienteIdInicial = Number(this.route.snapshot.queryParamMap.get('clienteId'));
+    if (clienteIdInicial > 0) {
+      this.filtroClienteId = clienteIdInicial;
+      this.form.patchValue({ clienteId: clienteIdInicial });
+    }
     this.carregarDadosIniciais();
   }
 

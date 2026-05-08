@@ -13,8 +13,6 @@ public record OrdemServicoResponse(
         Long veiculoId,
         String veiculoDescricao,
         String veiculoPlaca,
-        String clientePlaca,
-        String clienteVeiculo,
         Long agendamentoId,
         StatusOrdem status,
         BigDecimal valorTotal,

@@ -14,6 +14,7 @@ public record AgendamentoRequest(
         Long clienteId,
         @NotNull(message = "Servico e obrigatorio")
         Long servicoId,
+        @NotNull(message = "Veiculo e obrigatorio")
         Long veiculoId,
         @NotNull(message = "Data e obrigatoria")
         @FutureOrPresent(message = "Data deve ser hoje ou futura")

@@ -1,68 +1,185 @@
-<div class="shell">
+<div class="shell" [class.shell--menu-open]="menuMobileAberto">
   <aside class="sidebar">
-    <div class="brand-card">
-      <div class="brand-lockup">
-        <img [src]="logoMarkPath" alt="Simbolo CleanifyAI" class="brand-lockup__mark" />
-        <div class="brand-lockup__text">
-          <strong class="brand-lockup__name">Cleanify<span>AI</span></strong>
-          <small>Software para esteticas automotivas</small>
-        </div>
+    <a class="sidebar__brand" routerLink="/dashboard" (click)="fecharMenuMobile()">
+      <span class="brand-mark sidebar__logo" role="img" aria-label="CleanifyAI"></span>
+      <div class="sidebar__brand-text">
+        <strong class="sidebar__name">Cleanify<span>AI</span></strong>
+        <small>SaaS operacional</small>
       </div>
-      <div class="brand-card__copy">
-        <span class="brand__eyebrow">Cockpit SaaS para auto care</span>
-        <h1>Operacao clara, agenda rapida e uma base pronta para crescer.</h1>
-        <p>Clientes, servicos e agendamentos no mesmo cockpit visual, com estrutura pronta para WhatsApp e evolucao do produto.</p>
-      </div>
-    </div>
+    </a>
 
-    <nav class="menu">
+    <nav class="sidebar__nav" aria-label="Navegacao principal">
       @for (item of navItems; track item.route) {
-        <a [routerLink]="item.route" routerLinkActive="active" class="menu__item">
-          <span>{{ item.label }}</span>
-          <small>{{ item.caption }}</small>
+        <a
+          [routerLink]="item.route"
+          routerLinkActive="sidebar__nav-item--active"
+          [routerLinkActiveOptions]="{ exact: item.exact ?? true }"
+          class="sidebar__nav-item"
+          (click)="fecharMenuMobile()">
+          <span class="sidebar__nav-icon" aria-hidden="true">
+            @switch (item.icon) {
+              @case ('dashboard') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+              }
+              @case ('clientes') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.05" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="9.5" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3.1-3.9"/><path d="M16 3.1a4 4 0 0 1 0 7.8"/></svg>
+              }
+              @case ('veiculos') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.05" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9L18.4 5A2 2 0 0 0 16.5 4h-9A2 2 0 0 0 5.6 5l-2.1 6.1C2.7 11.3 2 12.1 2 13v3c0 .6.4 1 1 1h2"/><path d="M7 17h10"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+              }
+              @case ('ordens') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.05" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2.5" width="8" height="4" rx="1"/><path d="M16 4.5h2a2 2 0 0 1 2 2V20a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6.5a2 2 0 0 1 2-2h2"/><path d="M8 11h8"/><path d="M8 16h6"/></svg>
+              }
+              @case ('agendamentos') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2.5"/><path d="M16 3v4"/><path d="M8 3v4"/><path d="M4 10h16"/></svg>
+              }
+              @case ('servicos') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.05" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-8 8l-6.9 6.9a2.1 2.1 0 0 1-3-3l6.9-6.9a6 6 0 0 1 8-8z"/></svg>
+              }
+              @case ('ajustes') {
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.05" stroke-linecap="round" stroke-linejoin="round"><path d="M12.2 2h-.4a2 2 0 0 0-2 2v.2a2 2 0 0 1-1 1.7l-.4.2a2 2 0 0 1-2 0l-.1-.1a2 2 0 0 0-2.7.7l-.2.4a2 2 0 0 0 .7 2.7l.1.1a2 2 0 0 1 1 1.7v.5a2 2 0 0 1-1 1.7l-.1.1a2 2 0 0 0-.7 2.7l.2.4a2 2 0 0 0 2.7.7l.1-.1a2 2 0 0 1 2 0l.4.2a2 2 0 0 1 1 1.7v.2a2 2 0 0 0 2 2h.4a2 2 0 0 0 2-2v-.2a2 2 0 0 1 1-1.7l.4-.2a2 2 0 0 1 2 0l.1.1a2 2 0 0 0 2.7-.7l.2-.4a2 2 0 0 0-.7-2.7l-.1-.1a2 2 0 0 1-1-1.7v-.5a2 2 0 0 1 1-1.7l.1-.1a2 2 0 0 0 .7-2.7l-.2-.4a2 2 0 0 0-2.7-.7l-.1.1a2 2 0 0 1-2 0l-.4-.2a2 2 0 0 1-1-1.7V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+              }
+            }
+          </span>
+          <span class="sidebar__nav-label">{{ item.label }}</span>
         </a>
       }
     </nav>
 
     <div class="sidebar__footer">
-      <div class="status-card" [class.status-card--offline]="!apiOnline">
-        <span class="status-card__dot"></span>
-        <div>
-          <strong>{{ apiOnline ? 'API conectada' : 'API indisponivel' }}</strong>
-          <p>{{ apiOnline ? 'Backend local respondendo em /api/ping' : 'Verifique cleanifyai-api em localhost:8080' }}</p>
+      <button type="button" class="sidebar__user" (click)="toggleMenuUsuario()" aria-label="Abrir menu do usuario">
+        <span class="brand-mark sidebar__user-logo" aria-hidden="true"></span>
+        <div class="sidebar__user-info">
+          <strong>{{ nomeEmpresa }}</strong>
+          <small>Plano Profissional</small>
         </div>
-      </div>
-
-      <div class="operator-card">
-        <div>
-          <span class="operator-card__label">Sessao ativa</span>
-          <strong>{{ usuarioAtual?.nome }}</strong>
-          <p>{{ usuarioAtual?.email }}</p>
-        </div>
-        <span class="operator-card__role">{{ roleLabel }}</span>
-      </div>
+        <span class="sidebar__chevron" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        </span>
+      </button>
     </div>
   </aside>
 
   <main class="content">
-    <header class="topbar">
-      <div class="topbar__headline">
-        <p class="topbar__eyebrow">Cockpit operacional</p>
-        <h2>Gestao enxuta para esteticas automotivas</h2>
-        <p>Uma experiencia visual mais precisa para recepcao, agenda e acompanhamento da operacao.</p>
-      </div>
-      <div class="topbar__actions">
-        <div class="topbar__pill topbar__pill--brand">Angular + Spring Boot + MySQL</div>
-        <div class="topbar__user">
-          <span>{{ roleLabel }}</span>
-          <strong>{{ usuarioAtual?.nome }}</strong>
-        </div>
-        <button type="button" class="button button--ghost" (click)="logout()">Sair</button>
+    <header class="mobile-topbar">
+      <a class="mobile-topbar__brand" routerLink="/dashboard">
+        <span class="brand-mark mobile-topbar__logo" role="img" aria-label="CleanifyAI"></span>
+        <strong class="mobile-topbar__name">Cleanify<span>AI</span></strong>
+      </a>
+
+      <div class="mobile-topbar__actions">
+        <button
+          type="button"
+          class="mobile-topbar__icon"
+          (click)="alternarTema()"
+          [attr.aria-label]="temaAtual === 'dark' ? 'Trocar para tema claro' : 'Trocar para tema escuro'">
+          @if (temaAtual === 'dark') {
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+          } @else {
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.7A8.5 8.5 0 1 1 11.3 3 6.7 6.7 0 0 0 21 12.7z"/></svg>
+          }
+        </button>
+        <button type="button" class="mobile-topbar__icon mobile-topbar__bell" (click)="toggleNotificacoes()" aria-label="Notificacoes">
+          <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+        </button>
+        <button type="button" class="mobile-topbar__menu" (click)="toggleMenuMobile()" aria-label="Menu">
+          <svg width="27" height="27" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/></svg>
+        </button>
       </div>
     </header>
+
+    <div class="shell-actions" aria-label="Acoes globais">
+      <button
+        type="button"
+        class="shell-action-btn"
+        (click)="alternarTema()"
+        [attr.aria-label]="temaAtual === 'dark' ? 'Trocar para tema claro' : 'Trocar para tema escuro'">
+        @if (temaAtual === 'dark') {
+          <svg width="27" height="27" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        } @else {
+          <svg width="27" height="27" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.7A8.5 8.5 0 1 1 11.3 3 6.7 6.7 0 0 0 21 12.7z"/></svg>
+        }
+      </button>
+      <button type="button" class="shell-sync" [class.shell-sync--offline]="!apiOnline" (click)="sincronizarAgora()" aria-label="Verificar sincronizacao">
+        <span class="shell-sync__dot"></span>
+        {{ apiOnline ? 'Sincronizado' : 'Offline' }}
+      </button>
+      <button type="button" class="shell-action-btn" (click)="toggleNotificacoes()" aria-label="Notificacoes">
+        <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+      </button>
+    </div>
+
+    @if (notificacoesAbertas) {
+      <aside class="shell-popover shell-popover--notifications">
+        <header>
+          <strong>Notificacoes</strong>
+          <button type="button" (click)="fecharPaineis()" aria-label="Fechar notificacoes">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+          </button>
+        </header>
+        <div class="shell-popover__list">
+          @for (item of notificacoes; track item.title) {
+            <div class="shell-notification shell-notification--{{ item.tone }}">
+              <span></span>
+              <div>
+                <strong>{{ item.title }}</strong>
+                <p>{{ item.message }}</p>
+              </div>
+            </div>
+          }
+        </div>
+      </aside>
+    }
+
+    @if (menuUsuarioAberto) {
+      <aside class="shell-popover shell-popover--user">
+        <header>
+          <strong>{{ usuarioAtual?.nome }}</strong>
+          <button type="button" (click)="fecharPaineis()" aria-label="Fechar menu">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+          </button>
+        </header>
+        <div class="shell-user-menu">
+          <p>{{ usuarioAtual?.email }}</p>
+          <a routerLink="/ajustes" (click)="fecharPaineis()">Ajustes da conta</a>
+          <button type="button" (click)="logout()">Sair</button>
+        </div>
+      </aside>
+    }
 
     <section class="content__body">
       <router-outlet></router-outlet>
     </section>
   </main>
+
+  <nav class="mobile-nav" aria-label="Navegacao mobile">
+    @for (item of mobileNavItems; track item.route) {
+      <a
+        [routerLink]="item.route"
+        routerLinkActive="mobile-nav__item--active"
+        [routerLinkActiveOptions]="{ exact: item.exact ?? true }"
+        class="mobile-nav__item">
+        @switch (item.icon) {
+          @case ('agendamentos') {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2.5"/><path d="M16 3v4"/><path d="M8 3v4"/><path d="M4 10h16"/></svg>
+          }
+          @case ('ordens') {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8l2 3v15H6V6l2-3z"/><path d="M8 7h8"/><path d="M9 12h6"/><path d="M9 16h5"/></svg>
+          }
+          @case ('clientes') {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="9.5" cy="7" r="4"/></svg>
+          }
+          @case ('servicos') {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-8 8l-6.9 6.9a2.1 2.1 0 0 1-3-3l6.9-6.9a6 6 0 0 1 8-8z"/></svg>
+          }
+          @case ('mais') {
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h.01"/><path d="M12 12h.01"/><path d="M19 12h.01"/></svg>
+          }
+        }
+        <span>{{ item.label }}</span>
+      </a>
+    }
+  </nav>
+
+  <div class="shell__overlay" (click)="fecharMenuMobile()"></div>
 </div>

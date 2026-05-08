@@ -8,6 +8,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.cleanifyai.api.domain.entity.Lancamento;
+import com.cleanifyai.api.domain.enums.TipoLancamento;
 
 public interface LancamentoRepository extends JpaRepository<Lancamento, Long> {
 
@@ -18,4 +19,6 @@ public interface LancamentoRepository extends JpaRepository<Lancamento, Long> {
             Sort sort);
 
     Optional<Lancamento> findByIdAndEmpresaId(Long id, Long empresaId);
+
+    boolean existsByEmpresaIdAndOrdemIdAndTipo(Long empresaId, Long ordemId, TipoLancamento tipo);
 }

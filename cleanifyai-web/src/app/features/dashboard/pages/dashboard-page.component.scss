@@ -1,41 +1,4 @@
-.metrics-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.timeline {
-  display: grid;
-  gap: 0.9rem;
-}
-
-.timeline__item {
-  display: grid;
-  grid-template-columns: 1.4fr 1fr auto;
-  gap: 1rem;
-  align-items: center;
-  padding: 1rem 1.1rem;
-  border-radius: 1.15rem;
-  background: linear-gradient(135deg, rgba(24, 228, 211, 0.08), rgba(25, 84, 255, 0.08));
-  border: 1px solid rgba(116, 152, 255, 0.16);
-}
-
-.timeline__item strong {
-  color: #f4f9ff;
-}
-
-.timeline__item p {
-  margin: 0.25rem 0 0;
-  color: var(--color-muted);
-}
-
-@media (max-width: 960px) {
-  .metrics-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .timeline__item {
-    grid-template-columns: 1fr;
-  }
+:host {
+  display: block;
+  min-width: 0;
 }

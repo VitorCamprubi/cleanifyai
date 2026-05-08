@@ -24,12 +24,6 @@ public class Cliente extends EntidadeTenantBase {
     @Column(length = 120)
     private String email;
 
-    @Column(length = 120)
-    private String veiculo;
-
-    @Column(length = 10)
-    private String placa;
-
     @Column(length = 500)
     private String observacoes;
 
@@ -66,22 +60,6 @@ public class Cliente extends EntidadeTenantBase {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public String getVeiculo() {
-        return veiculo;
-    }
-
-    public void setVeiculo(String veiculo) {
-        this.veiculo = veiculo;
-    }
-
-    public String getPlaca() {
-        return placa;
-    }
-
-    public void setPlaca(String placa) {
-        this.placa = placa;
     }
 
     public String getObservacoes() {

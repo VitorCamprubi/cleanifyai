@@ -21,6 +21,8 @@ import { ServicosApiService } from '../../../core/services/servicos-api.service'
 import { ToastService } from '../../../core/services/toast.service';
 import { VeiculosApiService } from '../../../core/services/veiculos-api.service';
 
+type OrdemFormField = 'clienteId' | 'veiculoId' | 'observacoes';
+
 @Component({
   selector: 'app-ordens-page',
   standalone: true,
@@ -49,7 +51,7 @@ export class OrdensPageComponent implements OnInit {
 
   readonly form = this.fb.nonNullable.group({
     clienteId: [0, [Validators.required, Validators.min(1)]],
-    veiculoId: [null as number | null],
+    veiculoId: [0, [Validators.required, Validators.min(1)]],
     observacoes: ['', Validators.maxLength(500)],
     itens: this.fb.array([] as FormGroup[])
   });
@@ -76,7 +78,7 @@ export class OrdensPageComponent implements OnInit {
   private carregarVeiculosDoCliente(clienteId: number): void {
     if (!clienteId || clienteId <= 0) {
       this.veiculosDoCliente = [];
-      this.form.patchValue({ veiculoId: null }, { emitEvent: false });
+      this.form.patchValue({ veiculoId: 0 }, { emitEvent: false });
       return;
     }
     this.veiculosApi.listar(clienteId).subscribe({
@@ -85,11 +87,12 @@ export class OrdensPageComponent implements OnInit {
         // Se o veiculo atualmente selecionado nao pertence a este cliente, limpa.
         const atual = this.form.controls.veiculoId.value;
         if (atual && !veiculos.some((v) => v.id === atual)) {
-          this.form.patchValue({ veiculoId: null }, { emitEvent: false });
+          this.form.patchValue({ veiculoId: 0 }, { emitEvent: false });
         }
       },
       error: () => {
         this.veiculosDoCliente = [];
+        this.form.patchValue({ veiculoId: 0 }, { emitEvent: false });
       }
     });
   }
@@ -218,7 +221,7 @@ export class OrdensPageComponent implements OnInit {
     this.itensFormArray.clear();
     this.form.patchValue({
       clienteId: ordem.clienteId,
-      veiculoId: ordem.veiculoId ?? null,
+      veiculoId: ordem.veiculoId ?? 0,
       observacoes: ordem.observacoes ?? ''
     });
 
@@ -240,7 +243,7 @@ export class OrdensPageComponent implements OnInit {
     this.itensFormArray.clear();
     this.form.reset({
       clienteId: 0,
-      veiculoId: null,
+      veiculoId: 0,
       observacoes: '',
       itens: []
     });
@@ -293,6 +296,25 @@ export class OrdensPageComponent implements OnInit {
     return item.id;
   }
 
+  campoInvalido(campo: OrdemFormField): boolean {
+    const control = this.form.controls[campo];
+    return control.invalid && (control.touched || control.dirty);
+  }
+
+  mensagemErro(campo: OrdemFormField): string {
+    const control = this.form.controls[campo];
+    if (control.hasError('required')) {
+      return 'Campo obrigatorio.';
+    }
+    if (control.hasError('min')) {
+      return 'Selecione uma opcao valida.';
+    }
+    if (control.hasError('maxlength')) {
+      return 'Observacoes devem ter ate 500 caracteres.';
+    }
+    return '';
+  }
+
   private montarPayload(): OrdemServicoRequest {
     const value = this.form.getRawValue();
     const itens: ItemOrdemRequest[] = this.itensFormArray.controls.map((grupo) => ({
@@ -304,7 +326,7 @@ export class OrdensPageComponent implements OnInit {
 
     return {
       clienteId: Number(value.clienteId),
-      veiculoId: value.veiculoId ? Number(value.veiculoId) : null,
+      veiculoId: Number(value.veiculoId),
       observacoes: this.normalizar(value.observacoes),
       itens
     };

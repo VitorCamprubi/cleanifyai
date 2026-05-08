@@ -83,8 +83,6 @@ public class ClienteService {
         cliente.setNome(normalizarNome(request.nome()));
         cliente.setTelefone(normalizarTelefone(request.telefone()));
         cliente.setEmail(normalizarEmail(request.email()));
-        cliente.setVeiculo(normalizarTextoOpcional(request.veiculo()));
-        cliente.setPlaca(normalizarPlaca(request.placa()));
         cliente.setObservacoes(normalizarTextoOpcional(request.observacoes()));
     }
 
@@ -94,8 +92,6 @@ public class ClienteService {
                 cliente.getNome(),
                 cliente.getTelefone(),
                 cliente.getEmail(),
-                cliente.getVeiculo(),
-                cliente.getPlaca(),
                 cliente.getObservacoes());
     }
 
@@ -120,20 +116,6 @@ public class ClienteService {
     private String normalizarEmail(String email) {
         String valor = normalizarTextoOpcional(email);
         return valor != null ? valor.toLowerCase() : null;
-    }
-
-    private String normalizarPlaca(String placa) {
-        String valor = normalizarTextoOpcional(placa);
-        if (valor == null) {
-            return null;
-        }
-
-        String normalizada = valor.replaceAll("[^A-Za-z0-9]", "").toUpperCase();
-        if (!normalizada.matches("^[A-Z]{3}[0-9][A-Z0-9][0-9]{2}$")) {
-            throw new BusinessException("Placa invalida");
-        }
-
-        return normalizada;
     }
 
     private String normalizarTextoOpcional(String valor) {

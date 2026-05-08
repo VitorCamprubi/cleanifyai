@@ -1,3 +1,92 @@
+<section class="mobile-agenda">
+  <header class="mobile-agenda__header">
+    <div>
+      <p>Hoje</p>
+      <h1>Agenda</h1>
+    </div>
+    <button type="button" class="mobile-agenda__calendar" (click)="carregarDadosIniciais(true)" [disabled]="carregando" aria-label="Atualizar agenda">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2.5"/><path d="M16 3v4"/><path d="M8 3v4"/><path d="M4 10h16"/></svg>
+    </button>
+  </header>
+
+  @if (carregando && !agendamentos.length) {
+    <div class="empty-state">Carregando agenda...</div>
+  } @else if (!agendaMobileCards.length) {
+    <div class="empty-state">Nenhum agendamento para hoje.</div>
+  } @else {
+    @for (item of agendaMobileCards; track item.agendamento.id) {
+      <button type="button" class="agenda-card" [class.agenda-card--muted]="item.muted" (click)="selecionarAgendamento(item.agendamento)">
+      <div>
+        <div class="agenda-card__time">{{ item.horario }}</div>
+        <h2 class="agenda-card__title">{{ item.titulo }}</h2>
+        <p class="agenda-card__subtitle">{{ item.subtitulo }}</p>
+      </div>
+      <span class="status-pill" [ngClass]="'status-pill--' + item.statusClass">{{ item.status }}</span>
+      </button>
+    }
+  }
+
+  <a routerLink="/financeiro" class="agenda-revenue">
+    <span aria-hidden="true">
+      <svg width="38" height="38" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 34l10-10 8 8 14-18"/><path d="M31 14h9v9"/></svg>
+    </span>
+    <span>
+      <strong>{{ receitaPrevistaHoje }}</strong>
+      <span>previstos hoje</span>
+    </span>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+  </a>
+
+  @if (agendamentoSelecionado) {
+    <div class="mobile-detail" role="dialog" aria-modal="true" aria-label="Detalhes do agendamento">
+      <div class="mobile-detail__card">
+        <header>
+          <div>
+            <p>{{ agendamentoSelecionado.horario.slice(0, 5) }}</p>
+            <h2>{{ agendamentoSelecionado.servico.nome }}</h2>
+          </div>
+          <button type="button" (click)="fecharDetalheMobile()" aria-label="Fechar detalhes">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+          </button>
+        </header>
+        <div class="mobile-detail__meta">
+          <span>{{ agendamentoSelecionado.cliente.nome }}</span>
+          <span>
+            @if (agendamentoSelecionado.veiculo) {
+              {{ agendamentoSelecionado.veiculo.descricao }}{{ agendamentoSelecionado.veiculo.placa ? ' - ' + agendamentoSelecionado.veiculo.placa : '' }}
+            } @else {
+              Veiculo nao vinculado
+            }
+          </span>
+          <span class="status-pill" [ngClass]="'status-pill--' + classeStatusMobile(agendamentoSelecionado.status)">
+            {{ rotuloStatusMobile(agendamentoSelecionado.status) }}
+          </span>
+        </div>
+        <footer>
+          @if (agendamentoSelecionado.status === 'CONFIRMADO' || agendamentoSelecionado.status === 'EM_ANDAMENTO') {
+            <button type="button" class="button" (click)="gerarOrdem(agendamentoSelecionado)" [disabled]="itemProcessando(agendamentoSelecionado.id)">
+              {{ processandoOrdem(agendamentoSelecionado.id) ? 'Gerando...' : 'Gerar OS' }}
+            </button>
+          }
+          @if (agendamentoSelecionado.status === 'AGENDADO') {
+            <button type="button" class="button" (click)="confirmarAgendamentoMobile()" [disabled]="itemProcessando(agendamentoSelecionado.id)">Confirmar</button>
+          }
+          @if (agendamentoSelecionado.status === 'CONFIRMADO') {
+            <button type="button" class="button" (click)="iniciarAgendamentoMobile()" [disabled]="itemProcessando(agendamentoSelecionado.id)">Iniciar</button>
+          }
+          @if (agendamentoSelecionado.status === 'EM_ANDAMENTO') {
+            <button type="button" class="button" (click)="concluirAgendamentoMobile()" [disabled]="itemProcessando(agendamentoSelecionado.id)">Concluir</button>
+          }
+          <button type="button" class="button button--ghost" (click)="editarAgendamentoMobile()" [disabled]="itemProcessando(agendamentoSelecionado.id)">Editar</button>
+          @if (agendamentoSelecionado.status !== 'CONCLUIDO' && agendamentoSelecionado.status !== 'CANCELADO') {
+            <button type="button" class="button button--danger" (click)="cancelarAgendamentoMobile()" [disabled]="itemProcessando(agendamentoSelecionado.id)">Cancelar</button>
+          }
+        </footer>
+      </div>
+    </div>
+  }
+</section>
+
 <section class="page-intro">
   <div>
     <p class="eyebrow">Agendamentos</p>
@@ -7,10 +96,10 @@
 </section>
 
 @if (erro) {
-  <div class="alert alert--error">{{ erro }}</div>
+  <div class="alert alert--error desktop-agenda">{{ erro }}</div>
 }
 
-<section class="page-grid page-grid--form">
+<section class="page-grid page-grid--form desktop-agenda">
   <article class="panel">
     <div class="panel__header">
       <div>
@@ -29,7 +118,7 @@
           <select formControlName="clienteId" [class.input-invalid]="campoInvalido('clienteId')">
             <option [ngValue]="0">Selecione um cliente</option>
             @for (cliente of clientes; track cliente.id) {
-              <option [ngValue]="cliente.id">{{ cliente.nome }}{{ cliente.placa ? ' - ' + cliente.placa : '' }}</option>
+              <option [ngValue]="cliente.id">{{ cliente.nome }}</option>
             }
           </select>
           @if (campoInvalido('clienteId')) {
@@ -51,13 +140,16 @@
         </label>
 
         <label>
-          <span>Veiculo (opcional)</span>
-          <select formControlName="veiculoId" [disabled]="veiculosDoCliente.length === 0">
-            <option [ngValue]="null">{{ veiculosDoCliente.length === 0 ? 'Selecione um cliente primeiro' : 'Sem veiculo vinculado' }}</option>
+          <span>Veiculo</span>
+          <select formControlName="veiculoId" [disabled]="veiculosDoCliente.length === 0" [class.input-invalid]="campoInvalido('veiculoId')">
+            <option [ngValue]="0">{{ veiculosDoCliente.length === 0 ? 'Selecione um cliente com veiculo cadastrado' : 'Selecione o veiculo' }}</option>
             @for (veiculo of veiculosDoCliente; track veiculo.id) {
               <option [ngValue]="veiculo.id">{{ veiculo.marca }} {{ veiculo.modelo }} - {{ veiculo.placa || 'sem placa' }}</option>
             }
           </select>
+          @if (campoInvalido('veiculoId')) {
+            <small class="field-error">{{ mensagemErro('veiculoId') }}</small>
+          }
         </label>
 
         <label>
@@ -141,10 +233,8 @@
                   <span>
                     @if (agendamento.veiculo) {
                       {{ agendamento.veiculo.descricao }}{{ agendamento.veiculo.placa ? ' · ' + agendamento.veiculo.placa : '' }}
-                    } @else if (agendamento.cliente.veiculo) {
-                      {{ agendamento.cliente.veiculo }}{{ agendamento.cliente.placa ? ' · ' + agendamento.cliente.placa : '' }}
                     } @else {
-                      Veiculo nao informado
+                      Veiculo nao vinculado
                     }
                   </span>
                 </td>
@@ -176,12 +266,26 @@
                     <button
                       type="button"
                       class="button button--ghost"
+                      (click)="gerarOrdem(agendamento)"
+                      [disabled]="salvando || itemProcessando(agendamento.id)">
+                      {{ processandoOrdem(agendamento.id) ? 'Gerando...' : 'Gerar OS' }}
+                    </button>
+                    <button
+                      type="button"
+                      class="button button--ghost"
                       (click)="alterarStatus(agendamento, 'EM_ANDAMENTO')"
                       [disabled]="salvando || itemProcessando(agendamento.id)">
                       {{ processandoStatus(agendamento.id) ? 'Iniciando...' : 'Iniciar' }}
                     </button>
                   }
                   @if (agendamento.status === 'EM_ANDAMENTO') {
+                    <button
+                      type="button"
+                      class="button button--ghost"
+                      (click)="gerarOrdem(agendamento)"
+                      [disabled]="salvando || itemProcessando(agendamento.id)">
+                      {{ processandoOrdem(agendamento.id) ? 'Gerando...' : 'Gerar OS' }}
+                    </button>
                     <button
                       type="button"
                       class="button button--ghost"

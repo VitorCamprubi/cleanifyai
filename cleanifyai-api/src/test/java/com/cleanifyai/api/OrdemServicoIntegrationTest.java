@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,6 +23,7 @@ import com.cleanifyai.api.domain.entity.Cliente;
 import com.cleanifyai.api.domain.entity.Empresa;
 import com.cleanifyai.api.domain.entity.Servico;
 import com.cleanifyai.api.domain.entity.User;
+import com.cleanifyai.api.domain.entity.Veiculo;
 import com.cleanifyai.api.domain.enums.UserRole;
 import com.cleanifyai.api.repository.AgendamentoRepository;
 import com.cleanifyai.api.repository.ClienteRepository;
@@ -30,6 +32,7 @@ import com.cleanifyai.api.repository.LancamentoRepository;
 import com.cleanifyai.api.repository.OrdemServicoRepository;
 import com.cleanifyai.api.repository.ServicoRepository;
 import com.cleanifyai.api.repository.UserRepository;
+import com.cleanifyai.api.repository.VeiculoRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -46,10 +49,12 @@ class OrdemServicoIntegrationTest {
     @Autowired private AgendamentoRepository agendamentoRepository;
     @Autowired private OrdemServicoRepository ordemServicoRepository;
     @Autowired private LancamentoRepository lancamentoRepository;
+    @Autowired private VeiculoRepository veiculoRepository;
     @Autowired private PasswordEncoder passwordEncoder;
 
     private Empresa empresa;
     private Cliente cliente;
+    private Veiculo veiculo;
     private Servico servico;
 
     @BeforeEach
@@ -57,6 +62,7 @@ class OrdemServicoIntegrationTest {
         lancamentoRepository.deleteAll();
         ordemServicoRepository.deleteAll();
         agendamentoRepository.deleteAll();
+        veiculoRepository.deleteAll();
         clienteRepository.deleteAll();
         servicoRepository.deleteAll();
         userRepository.deleteAll();
@@ -74,9 +80,18 @@ class OrdemServicoIntegrationTest {
         cliente.setEmpresaId(empresa.getId());
         cliente.setNome("Cliente OS");
         cliente.setTelefone("5511988887777");
-        cliente.setVeiculo("Civic");
-        cliente.setPlaca("ABC1D23");
         cliente = clienteRepository.save(cliente);
+
+        veiculo = new Veiculo();
+        veiculo.setEmpresaId(empresa.getId());
+        veiculo.setClienteId(cliente.getId());
+        veiculo.setMarca("Honda");
+        veiculo.setModelo("Civic");
+        veiculo.setPlaca("ABC1D23");
+        veiculo.setCor("Prata");
+        veiculo.setAnoModelo(2024);
+        veiculo.setAtivo(true);
+        veiculo = veiculoRepository.save(veiculo);
 
         servico = new Servico();
         servico.setEmpresaId(empresa.getId());
@@ -97,13 +112,14 @@ class OrdemServicoIntegrationTest {
                         .content("""
                                 {
                                   "clienteId": %d,
+                                  "veiculoId": %d,
                                   "observacoes": "Cliente preferiu pacote completo",
                                   "itens": [
                                     {"servicoId": %d, "quantidade": 1, "valorUnitario": 80.00},
                                     {"servicoId": %d, "quantidade": 2, "valorUnitario": 50.00}
                                   ]
                                 }
-                                """.formatted(cliente.getId(), servico.getId(), servico.getId())))
+                                """.formatted(cliente.getId(), veiculo.getId(), servico.getId(), servico.getId())))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.status").value("ABERTA"))
                 .andExpect(jsonPath("$.valorTotal").value(180.00))
@@ -117,6 +133,42 @@ class OrdemServicoIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.clienteNome").value("Cliente OS"))
                 .andExpect(jsonPath("$.itens[0].descricao").value("Lavagem Tecnica"));
+    }
+
+    @Test
+    void deveCriarOSAPartirDeAgendamento() throws Exception {
+        String token = loginAdmin();
+        LocalDate data = LocalDate.now().plusDays(1);
+
+        MvcResult agendamentoResult = mockMvc.perform(post("/api/agendamentos")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "clienteId": %d,
+                                  "servicoId": %d,
+                                  "veiculoId": %d,
+                                  "data": "%s",
+                                  "horario": "09:00:00",
+                                  "status": "CONFIRMADO",
+                                  "observacoes": "Criar OS no check-in"
+                                }
+                                """.formatted(cliente.getId(), servico.getId(), veiculo.getId(), data)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        Long agendamentoId = readId(agendamentoResult);
+
+        mockMvc.perform(post("/api/ordens/from-agendamento/{agendamentoId}", agendamentoId)
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.agendamentoId").value(agendamentoId))
+                .andExpect(jsonPath("$.clienteId").value(cliente.getId()))
+                .andExpect(jsonPath("$.veiculoId").value(veiculo.getId()))
+                .andExpect(jsonPath("$.valorTotal").value(80.00))
+                .andExpect(jsonPath("$.itens.length()").value(1));
     }
 
     @Test
@@ -148,6 +200,13 @@ class OrdemServicoIntegrationTest {
                         .content("{\"status\": \"ENTREGUE\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("ENTREGUE"));
+
+        mockMvc.perform(get("/api/financeiro/lancamentos")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].ordemId").value(ordemId))
+                .andExpect(jsonPath("$[0].tipo").value("ENTRADA"))
+                .andExpect(jsonPath("$[0].valor").value(80.00));
     }
 
     @Test
@@ -181,10 +240,11 @@ class OrdemServicoIntegrationTest {
                         .content("""
                                 {
                                   "clienteId": %d,
+                                  "veiculoId": %d,
                                   "observacoes": "outra OS",
                                   "itens": [{"servicoId": %d, "quantidade": 1, "valorUnitario": 50.00}]
                                 }
-                                """.formatted(cliente.getId(), servico.getId())))
+                                """.formatted(cliente.getId(), veiculo.getId(), servico.getId())))
                 .andExpect(status().isCreated());
     }
 
@@ -198,9 +258,10 @@ class OrdemServicoIntegrationTest {
                         .content("""
                                 {
                                   "clienteId": %d,
+                                  "veiculoId": %d,
                                   "itens": [{"servicoId": %d, "quantidade": 1, "valorUnitario": 80.00}]
                                 }
-                                """.formatted(cliente.getId(), servico.getId())))
+                                """.formatted(cliente.getId(), veiculo.getId(), servico.getId())))
                 .andExpect(status().isCreated())
                 .andReturn();
 
@@ -226,9 +287,10 @@ class OrdemServicoIntegrationTest {
                         .content("""
                                 {
                                   "clienteId": %d,
+                                  "veiculoId": %d,
                                   "itens": [{"servicoId": %d, "quantidade": 1, "valorUnitario": 80.00}]
                                 }
-                                """.formatted(cliente.getId(), servico.getId())))
+                                """.formatted(cliente.getId(), veiculo.getId(), servico.getId())))
                 .andExpect(status().isCreated())
                 .andReturn();
         return readId(result);

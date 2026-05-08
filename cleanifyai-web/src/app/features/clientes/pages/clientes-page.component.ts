@@ -1,26 +1,31 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
+import { forkJoin } from 'rxjs';
 
 import { Cliente, ClientePayload } from '../../../core/models/cliente.model';
+import { Veiculo } from '../../../core/models/veiculo.model';
 import { ClientesApiService } from '../../../core/services/clientes-api.service';
 import { DashboardRefreshService } from '../../../core/services/dashboard-refresh.service';
 import { HttpErrorService } from '../../../core/services/http-error.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { VeiculosApiService } from '../../../core/services/veiculos-api.service';
 import { formatarTelefoneBr } from '../../../core/utils/formatters';
 
-type ClienteFormField = 'nome' | 'telefone' | 'email' | 'veiculo' | 'placa' | 'observacoes';
+type ClienteFormField = 'nome' | 'telefone' | 'email' | 'observacoes';
 
 @Component({
   selector: 'app-clientes-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './clientes-page.component.html',
   styleUrl: './clientes-page.component.scss'
 })
 export class ClientesPageComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly clientesApi = inject(ClientesApiService);
+  private readonly veiculosApi = inject(VeiculosApiService);
   private readonly httpErrorService = inject(HttpErrorService);
   private readonly toastService = inject(ToastService);
   private readonly dashboardRefreshService = inject(DashboardRefreshService);
@@ -29,12 +34,11 @@ export class ClientesPageComponent implements OnInit {
     nome: ['', [Validators.required, Validators.maxLength(120)]],
     telefone: ['', [Validators.required, Validators.maxLength(20)]],
     email: ['', [Validators.email, Validators.maxLength(120)]],
-    veiculo: ['', Validators.maxLength(120)],
-    placa: ['', [Validators.maxLength(10), Validators.pattern(/^$|^[A-Za-z]{3}-?[0-9][A-Za-z0-9][0-9]{2}$/)]],
     observacoes: ['', Validators.maxLength(500)]
   });
 
   clientes: Cliente[] = [];
+  veiculos: Veiculo[] = [];
   carregando = false;
   salvando = false;
   erro = '';
@@ -49,9 +53,13 @@ export class ClientesPageComponent implements OnInit {
     this.carregando = true;
     this.erro = '';
 
-    this.clientesApi.listar().subscribe({
-      next: (clientes) => {
+    forkJoin({
+      clientes: this.clientesApi.listar(),
+      veiculos: this.veiculosApi.listar()
+    }).subscribe({
+      next: ({ clientes, veiculos }) => {
         this.clientes = this.ordenarClientes(clientes);
+        this.veiculos = veiculos;
         this.carregando = false;
       },
       error: (error) => {
@@ -104,8 +112,6 @@ export class ClientesPageComponent implements OnInit {
       nome: cliente.nome,
       telefone: formatarTelefoneBr(cliente.telefone),
       email: cliente.email ?? '',
-      veiculo: cliente.veiculo ?? '',
-      placa: cliente.placa ?? '',
       observacoes: cliente.observacoes ?? ''
     });
   }
@@ -143,8 +149,6 @@ export class ClientesPageComponent implements OnInit {
       nome: '',
       telefone: '',
       email: '',
-      veiculo: '',
-      placa: '',
       observacoes: ''
     });
     this.form.markAsPristine();
@@ -167,9 +171,6 @@ export class ClientesPageComponent implements OnInit {
     if (control.hasError('maxlength')) {
       return 'Valor acima do limite permitido.';
     }
-    if (control.hasError('pattern')) {
-      return 'Placa invalida.';
-    }
     return '';
   }
 
@@ -181,14 +182,27 @@ export class ClientesPageComponent implements OnInit {
     return this.clienteProcessandoId === id;
   }
 
+  veiculosDoCliente(clienteId: number): Veiculo[] {
+    return this.veiculos.filter((veiculo) => veiculo.clienteId === clienteId);
+  }
+
+  resumoVeiculos(clienteId: number): string {
+    const veiculos = this.veiculosDoCliente(clienteId);
+    if (!veiculos.length) {
+      return 'Nenhum veiculo vinculado';
+    }
+    return veiculos
+      .slice(0, 2)
+      .map((veiculo) => `${veiculo.marca} ${veiculo.modelo}${veiculo.placa ? ` - ${veiculo.placa}` : ''}`)
+      .join(' | ');
+  }
+
   private criarPayload(): ClientePayload {
     const value = this.form.getRawValue();
     return {
       nome: value.nome.trim(),
       telefone: value.telefone.trim(),
       email: this.normalizarTexto(value.email),
-      veiculo: this.normalizarTexto(value.veiculo),
-      placa: this.normalizarTexto(value.placa),
       observacoes: this.normalizarTexto(value.observacoes)
     };
   }

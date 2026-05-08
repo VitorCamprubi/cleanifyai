@@ -57,6 +57,14 @@ export const routes: Routes = [
       {
         path: 'financeiro/categorias',
         loadComponent: () => import('./features/financeiro/pages/categorias-page.component').then((m) => m.CategoriasPageComponent)
+      },
+      {
+        path: 'ajustes',
+        loadComponent: () => import('./features/settings/settings-page.component').then((m) => m.SettingsPageComponent)
+      },
+      {
+        path: 'mais',
+        loadComponent: () => import('./features/settings/settings-page.component').then((m) => m.SettingsPageComponent)
       }
     ]
   },

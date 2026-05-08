@@ -1,69 +1,118 @@
-<section class="page-intro">
-  <div>
-    <p class="eyebrow">Visao operacional</p>
-    <h3>Resumo rapido da estetica</h3>
-    <p>Indicadores essenciais para acompanhar carteira, servicos e agenda do dia.</p>
-  </div>
-  <button type="button" class="button button--ghost" (click)="carregarResumo(true)" [disabled]="carregando">
-    {{ carregando ? 'Atualizando...' : 'Atualizar dados' }}
-  </button>
-</section>
+<section class="dashboard-page">
+  <header class="dashboard-header">
+    <div>
+      <p>Vis&atilde;o geral</p>
+      <h1>Dashboard</h1>
+    </div>
+  </header>
 
-@if (erro) {
-  <div class="alert alert--error">{{ erro }}</div>
-}
+  @if (erro) {
+    <div class="alert alert--error">{{ erro }}</div>
+  }
 
-@if (carregando && !resumo) {
-  <div class="empty-state">Carregando dashboard...</div>
-} @else if (resumo) {
-  <section class="metrics-grid">
-    <article class="metric-card">
-      <span>Clientes cadastrados</span>
-      <strong>{{ resumo.totalClientes }}</strong>
-      <small>Base ativa para relacionamento e recorrencia.</small>
-    </article>
+  <section class="metrics-grid" aria-label="Indicadores principais">
+    @for (metric of metricas; track metric.label) {
+      <a class="metric-card metric-card--with-icon" [routerLink]="metric.route">
+        <div
+          class="metric-card__icon"
+          [class.metric-card__icon--violet]="metric.tone === 'violet'"
+          [class.metric-card__icon--mint]="metric.tone === 'mint'">
+          @switch (metric.icon) {
+            @case ('orders') {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8l2 3v15H6V6l2-3z"/><path d="M8 7h8"/><path d="M9 12h6"/><path d="M9 16h5"/></svg>
+            }
+            @case ('calendar') {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2.5"/><path d="M16 3v4"/><path d="M8 3v4"/><path d="M4 10h16"/></svg>
+            }
+            @case ('revenue') {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="M17 6.5H9.5a3.5 3.5 0 0 0 0 7H15a3.5 3.5 0 0 1 0 7H7"/></svg>
+            }
+            @case ('services') {
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-8 8l-6.9 6.9a2.1 2.1 0 0 1-3-3l6.9-6.9a6 6 0 0 1 8-8z"/></svg>
+            }
+          }
+        </div>
 
-    <article class="metric-card">
-      <span>Servicos ativos</span>
-      <strong>{{ resumo.totalServicosAtivos }}</strong>
-      <small>Catalogo disponivel para venda e agendamento.</small>
-    </article>
-
-    <article class="metric-card">
-      <span>Agendamentos do dia</span>
-      <strong>{{ resumo.totalAgendamentosDoDia }}</strong>
-      <small>Volume programado para a operacao de hoje.</small>
-    </article>
+        <div class="metric-card__body">
+          <span>{{ metric.label }}</span>
+          <strong>{{ metric.value }}</strong>
+          <small>{{ metric.hint }}</small>
+        </div>
+      </a>
+    }
   </section>
 
-  <section class="panel">
-    <div class="panel__header">
-      <div>
-        <p class="eyebrow">Agenda futura</p>
-        <h4>Proximos agendamentos</h4>
-      </div>
+  <article class="dashboard-panel revenue-card">
+    <div class="revenue-card__header">
+      <h2>Faturamento - &uacute;ltimos 30 dias</h2>
+      <span class="revenue-card__total">{{ faturamentoTotal }}</span>
     </div>
 
-    @if (resumo.proximosAgendamentos.length) {
-      <div class="timeline">
-        @for (item of resumo.proximosAgendamentos; track item.id) {
-          <article class="timeline__item">
-            <div>
-              <strong>{{ item.clienteNome }}</strong>
-              <p>{{ item.servicoNome }}</p>
-            </div>
-            <div>
-              <strong>{{ item.data | date: 'dd/MM/yyyy' }}</strong>
-              <p>{{ item.horario }}</p>
-            </div>
-            <span class="status-pill">{{ rotuloStatus(item.status) }}</span>
-          </article>
+    <div class="chart" aria-label="Grafico de faturamento dos ultimos 30 dias">
+      <div class="chart__axis-y" aria-hidden="true">
+        @for (label of chartAxisY; track label) {
+          <span>{{ label }}</span>
+        }
+      </div>
+      <div class="chart__grid" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <svg viewBox="0 0 760 150" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="chartArea" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0" stop-color="#12bff0" stop-opacity="0.34" />
+            <stop offset="1" stop-color="#12bff0" stop-opacity="0" />
+          </linearGradient>
+        </defs>
+        <polygon class="chart__area" [attr.points]="chartAreaPoints" />
+        <polyline class="chart__line" [attr.points]="chartLinePoints" />
+        @for (dot of chartDots; track dot.x) {
+          <circle class="chart__dot" [attr.cx]="dot.x" [attr.cy]="dot.y" r="4" />
+        }
+      </svg>
+      <div class="chart__axis-x" aria-hidden="true">
+        @for (label of chartLabels; track label) {
+          <span>{{ label }}</span>
+        }
+      </div>
+    </div>
+  </article>
+
+  <article class="dashboard-panel orders-card">
+    <div class="orders-card__header">
+      <h2>Ordens recentes</h2>
+    </div>
+
+    @if (ordensRecentes.length) {
+      <div class="orders-list">
+        @for (ordem of ordensRecentes; track ordem.id) {
+          <a class="orders-row" [routerLink]="['/ordens']">
+          <span class="orders-row__icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14l-1.6-6.1A2.5 2.5 0 0 0 15 9H9a2.5 2.5 0 0 0-2.4 1.9L5 17z"/><circle cx="8" cy="17" r="1.6"/><circle cx="16" cy="17" r="1.6"/></svg>
+          </span>
+          <div>
+            <strong>{{ ordem.title }}</strong>
+            <span>{{ ordem.subtitle }}</span>
+          </div>
+          <span class="status-pill" [ngClass]="'status-pill--' + ordem.statusClass">{{ ordem.status }}</span>
+          <span class="orders-row__time">{{ ordem.time }}</span>
+          <span class="orders-row__more" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5h.01"/><path d="M12 12h.01"/><path d="M12 19h.01"/></svg>
+          </span>
+          </a>
         }
       </div>
     } @else {
-      <div class="empty-state">Nenhum agendamento futuro encontrado.</div>
+      <div class="empty-state">Nenhuma ordem registrada ainda.</div>
     }
-  </section>
-} @else {
-  <div class="empty-state">O dashboard ainda nao possui dados para exibir.</div>
-}
+
+    <a routerLink="/ordens" class="orders-card__footer">
+      Ver todas as ordens
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    </a>
+  </article>
+</section>

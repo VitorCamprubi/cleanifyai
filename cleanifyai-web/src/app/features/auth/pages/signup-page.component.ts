@@ -19,8 +19,6 @@ export class SignupPageComponent {
   private readonly httpErrorService = inject(HttpErrorService);
   private readonly router = inject(Router);
 
-  readonly logoMarkPath = 'brand/cleanifyai-logo-mark.svg';
-
   readonly form = this.fb.nonNullable.group({
     empresa: this.fb.nonNullable.group({
       nome: ['', [Validators.required, Validators.maxLength(160)]],

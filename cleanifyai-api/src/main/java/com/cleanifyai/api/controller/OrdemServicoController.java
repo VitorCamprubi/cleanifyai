@@ -38,6 +38,12 @@ public class OrdemServicoController {
         return ResponseEntity.created(URI.create("/api/ordens/" + response.id())).body(response);
     }
 
+    @PostMapping("/from-agendamento/{agendamentoId}")
+    public ResponseEntity<OrdemServicoResponse> criarAPartirDeAgendamento(@PathVariable Long agendamentoId) {
+        OrdemServicoResponse response = ordemServicoService.criarAPartirDeAgendamento(agendamentoId);
+        return ResponseEntity.created(URI.create("/api/ordens/" + response.id())).body(response);
+    }
+
     @GetMapping
     public ResponseEntity<List<OrdemServicoResponse>> listar(@RequestParam(name = "status", required = false) StatusOrdem status) {
         return ResponseEntity.ok(ordemServicoService.listar(status));

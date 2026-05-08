@@ -2,23 +2,23 @@
   <div class="auth-layout">
     <aside class="auth-showcase">
       <div class="auth-lockup">
-        <img [src]="logoMarkPath" alt="Simbolo CleanifyAI" class="auth-lockup__mark" />
+        <span class="brand-mark auth-lockup__mark" role="img" aria-label="CleanifyAI"></span>
         <div class="auth-lockup__text">
           <strong class="auth-lockup__name">Cleanify<span>AI</span></strong>
-          <small>Software para esteticas automotivas</small>
+          <small>App para esteticas automotivas</small>
         </div>
       </div>
 
       <div class="auth-showcase__copy">
         <p class="eyebrow">Plataforma operacional</p>
-        <h1>Controle a operacao da estetica em um painel mais claro e profissional.</h1>
-        <p>Cadastros, agenda, status e dashboard em uma experiencia unica, pronta para crescer com o produto.</p>
+        <h1>Entre no painel que organiza agenda, ordens e faturamento.</h1>
+        <p>Uma experiencia clara no desktop e precisa no celular, seguindo a identidade visual do CleanifyAI.</p>
       </div>
 
       <div class="auth-showcase__chips">
-        <span>Agenda operacional</span>
-        <span>Clientes e servicos</span>
-        <span>Base pronta para WhatsApp</span>
+        <span>Dashboard sincronizado</span>
+        <span>Agenda mobile</span>
+        <span>Modo claro e escuro</span>
       </div>
     </aside>
 
@@ -36,7 +36,7 @@
       <form class="stack" [formGroup]="form" (ngSubmit)="entrar()">
         <label>
           <span>Email</span>
-          <input type="email" formControlName="email" placeholder="admin@cleanifyai.local" [class.input-invalid]="campoInvalido('email')" />
+          <input type="email" formControlName="email" placeholder="admin@cleanifyai.local" autocomplete="email" [class.input-invalid]="campoInvalido('email')" />
           @if (campoInvalido('email')) {
             <small class="field-error">{{ mensagemErro('email') }}</small>
           }
@@ -44,7 +44,7 @@
 
         <label>
           <span>Senha</span>
-          <input type="password" formControlName="senha" placeholder="Digite sua senha" [class.input-invalid]="campoInvalido('senha')" />
+          <input type="password" formControlName="senha" placeholder="Digite sua senha" autocomplete="current-password" [class.input-invalid]="campoInvalido('senha')" />
           @if (campoInvalido('senha')) {
             <small class="field-error">{{ mensagemErro('senha') }}</small>
           }
@@ -56,9 +56,9 @@
       </form>
 
       <div class="auth-panel__hint">
-        <strong>Usuarios seed</strong>
-        <span>admin&#64;cleanifyai.local / admin123</span>
-        <span>atendente&#64;cleanifyai.local / atendente123</span>
+        <strong>Usuarios de demonstracao</strong>
+        <span>admin&#64;cleanifyai.local - admin123</span>
+        <span>atendente&#64;cleanifyai.local - atendente123</span>
       </div>
 
       <p class="auth-panel__alt">

@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 
 import { Agendamento, AgendamentoPayload, STATUS_AGENDAMENTO_OPTIONS, StatusAgendamento } from '../../../core/models/agendamento.model';
@@ -11,18 +12,29 @@ import { AgendamentosApiService } from '../../../core/services/agendamentos-api.
 import { ClientesApiService } from '../../../core/services/clientes-api.service';
 import { DashboardRefreshService } from '../../../core/services/dashboard-refresh.service';
 import { HttpErrorService } from '../../../core/services/http-error.service';
+import { OrdensApiService } from '../../../core/services/ordens-api.service';
 import { ServicosApiService } from '../../../core/services/servicos-api.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { VeiculosApiService } from '../../../core/services/veiculos-api.service';
 import { formatarStatusAgendamento } from '../../../core/utils/formatters';
 
 type AgendamentoFormField = 'clienteId' | 'servicoId' | 'veiculoId' | 'data' | 'horario' | 'status' | 'observacoes';
-type TipoAcaoAgenda = 'status' | 'cancelamento' | null;
+type TipoAcaoAgenda = 'status' | 'cancelamento' | 'ordem' | null;
+
+interface AgendaMobileCard {
+  agendamento: Agendamento;
+  horario: string;
+  titulo: string;
+  subtitulo: string;
+  status: string;
+  statusClass: string;
+  muted: boolean;
+}
 
 @Component({
   selector: 'app-agendamentos-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './agendamentos-page.component.html',
   styleUrl: './agendamentos-page.component.scss'
 })
@@ -32,6 +44,7 @@ export class AgendamentosPageComponent implements OnInit {
   private readonly clientesApi = inject(ClientesApiService);
   private readonly servicosApi = inject(ServicosApiService);
   private readonly veiculosApi = inject(VeiculosApiService);
+  private readonly ordensApi = inject(OrdensApiService);
   private readonly httpErrorService = inject(HttpErrorService);
   private readonly toastService = inject(ToastService);
   private readonly dashboardRefreshService = inject(DashboardRefreshService);
@@ -41,7 +54,7 @@ export class AgendamentosPageComponent implements OnInit {
   readonly form = this.fb.nonNullable.group({
     clienteId: [0, [Validators.required, Validators.min(1)]],
     servicoId: [0, [Validators.required, Validators.min(1)]],
-    veiculoId: [null as number | null],
+    veiculoId: [0, [Validators.required, Validators.min(1)]],
     data: ['', Validators.required],
     horario: ['', Validators.required],
     status: ['AGENDADO' as StatusAgendamento, Validators.required],
@@ -58,6 +71,38 @@ export class AgendamentosPageComponent implements OnInit {
   agendamentoEmEdicaoId: number | null = null;
   agendamentoProcessandoId: number | null = null;
   tipoAcaoProcessando: TipoAcaoAgenda = null;
+  agendamentoSelecionado: Agendamento | null = null;
+
+  get agendaMobileCards(): AgendaMobileCard[] {
+    return this.agendamentos
+      .filter((agendamento) => agendamento.data === this.dataMinima)
+      .filter((agendamento) => agendamento.status !== 'CANCELADO')
+      .slice(0, 3)
+      .map((agendamento) => ({
+        agendamento,
+        horario: this.formatarHorarioParaInput(agendamento.horario),
+        titulo: agendamento.servico.nome,
+        subtitulo: this.descricaoAgendaMobile(agendamento),
+        status: this.rotuloStatusMobile(agendamento.status),
+        statusClass: this.classeStatusMobile(agendamento.status),
+        muted: agendamento.status === 'AGENDADO'
+      }));
+  }
+
+  get receitaPrevistaHoje(): string {
+    const hoje = this.obterDataMinima();
+    const total = this.agendamentos
+      .filter((agendamento) => agendamento.data === hoje && agendamento.status !== 'CANCELADO')
+      .reduce((acc, agendamento) => acc + (agendamento.servico?.preco ?? 0), 0);
+
+    return this.formatarMoeda(total);
+  }
+
+  get agendamentosHojeMobile(): Agendamento[] {
+    return this.agendamentos
+      .filter((agendamento) => agendamento.data === this.dataMinima && agendamento.status !== 'CANCELADO')
+      .slice(0, 3);
+  }
 
   ngOnInit(): void {
     this.carregarDadosIniciais();
@@ -69,7 +114,7 @@ export class AgendamentosPageComponent implements OnInit {
   private carregarVeiculosDoCliente(clienteId: number): void {
     if (!clienteId || clienteId <= 0) {
       this.veiculosDoCliente = [];
-      this.form.patchValue({ veiculoId: null }, { emitEvent: false });
+      this.form.patchValue({ veiculoId: 0 }, { emitEvent: false });
       return;
     }
     this.veiculosApi.listar(clienteId).subscribe({
@@ -77,11 +122,12 @@ export class AgendamentosPageComponent implements OnInit {
         this.veiculosDoCliente = veiculos;
         const atual = this.form.controls.veiculoId.value;
         if (atual && !veiculos.some((v) => v.id === atual)) {
-          this.form.patchValue({ veiculoId: null }, { emitEvent: false });
+          this.form.patchValue({ veiculoId: 0 }, { emitEvent: false });
         }
       },
       error: () => {
         this.veiculosDoCliente = [];
+        this.form.patchValue({ veiculoId: 0 }, { emitEvent: false });
       }
     });
   }
@@ -99,6 +145,7 @@ export class AgendamentosPageComponent implements OnInit {
         this.clientes = [...clientes].sort((a, b) => a.nome.localeCompare(b.nome));
         this.servicos = [...servicos].sort((a, b) => a.nome.localeCompare(b.nome));
         this.agendamentos = this.ordenarAgendamentos(agendamentos);
+        this.atualizarAgendamentoSelecionado();
         this.carregando = false;
       },
       error: (error) => {
@@ -150,7 +197,7 @@ export class AgendamentosPageComponent implements OnInit {
     this.form.patchValue({
       clienteId: agendamento.cliente.id,
       servicoId: agendamento.servico.id,
-      veiculoId: agendamento.veiculo?.id ?? null,
+      veiculoId: agendamento.veiculo?.id ?? 0,
       data: agendamento.data,
       horario: this.formatarHorarioParaInput(agendamento.horario),
       status: agendamento.status,
@@ -218,12 +265,81 @@ export class AgendamentosPageComponent implements OnInit {
     });
   }
 
+  gerarOrdem(agendamento: Agendamento): void {
+    if (!agendamento.veiculo) {
+      this.toastService.error('Vincule um veiculo ao agendamento antes de gerar a OS.');
+      return;
+    }
+
+    this.agendamentoProcessandoId = agendamento.id;
+    this.tipoAcaoProcessando = 'ordem';
+    this.ordensApi.criarAPartirDeAgendamento(agendamento.id).subscribe({
+      next: (ordem) => {
+        this.agendamentoProcessandoId = null;
+        this.tipoAcaoProcessando = null;
+        this.dashboardRefreshService.solicitarAtualizacao();
+        this.toastService.success(`OS #${ordem.id} criada a partir do agendamento.`);
+      },
+      error: (error) => {
+        const mensagem = this.httpErrorService.obterMensagem(error, 'Nao foi possivel gerar a OS.');
+        this.agendamentoProcessandoId = null;
+        this.tipoAcaoProcessando = null;
+        this.toastService.error(mensagem);
+      }
+    });
+  }
+
+  selecionarAgendamento(agendamento: Agendamento): void {
+    this.agendamentoSelecionado = agendamento;
+  }
+
+  fecharDetalheMobile(): void {
+    this.agendamentoSelecionado = null;
+  }
+
+  confirmarAgendamentoMobile(): void {
+    if (!this.agendamentoSelecionado) {
+      return;
+    }
+    this.alterarStatus(this.agendamentoSelecionado, 'CONFIRMADO');
+  }
+
+  iniciarAgendamentoMobile(): void {
+    if (!this.agendamentoSelecionado) {
+      return;
+    }
+    this.alterarStatus(this.agendamentoSelecionado, 'EM_ANDAMENTO');
+  }
+
+  concluirAgendamentoMobile(): void {
+    if (!this.agendamentoSelecionado) {
+      return;
+    }
+    this.alterarStatus(this.agendamentoSelecionado, 'CONCLUIDO');
+  }
+
+  cancelarAgendamentoMobile(): void {
+    if (!this.agendamentoSelecionado) {
+      return;
+    }
+    this.cancelar(this.agendamentoSelecionado);
+  }
+
+  editarAgendamentoMobile(): void {
+    if (!this.agendamentoSelecionado) {
+      return;
+    }
+    this.editar(this.agendamentoSelecionado);
+    this.fecharDetalheMobile();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   cancelarEdicao(): void {
     this.agendamentoEmEdicaoId = null;
     this.form.reset({
       clienteId: 0,
       servicoId: 0,
-      veiculoId: null,
+      veiculoId: 0,
       data: '',
       horario: '',
       status: 'AGENDADO',
@@ -257,6 +373,37 @@ export class AgendamentosPageComponent implements OnInit {
     return formatarStatusAgendamento(status);
   }
 
+  rotuloStatusMobile(status: StatusAgendamento): string {
+    const rotulos: Record<StatusAgendamento, string> = {
+      AGENDADO: 'Aguardando',
+      CONFIRMADO: 'Confirmado',
+      EM_ANDAMENTO: 'Em execucao',
+      CONCLUIDO: 'Concluido',
+      CANCELADO: 'Cancelado'
+    };
+
+    return rotulos[status];
+  }
+
+  classeStatusMobile(status: StatusAgendamento): string {
+    const classes: Record<StatusAgendamento, string> = {
+      AGENDADO: 'aguardando',
+      CONFIRMADO: 'confirmado',
+      EM_ANDAMENTO: 'em_execucao',
+      CONCLUIDO: 'concluido',
+      CANCELADO: 'cancelado'
+    };
+
+    return classes[status];
+  }
+
+  private descricaoAgendaMobile(agendamento: Agendamento): string {
+    const veiculo = agendamento.veiculo?.descricao;
+    const placa = agendamento.veiculo?.placa;
+    const complementoVeiculo = veiculo ? ` - ${veiculo}${placa ? ` ${placa}` : ''}` : '';
+    return `${agendamento.cliente.nome}${complementoVeiculo}`;
+  }
+
   itemProcessando(id: number): boolean {
     return this.agendamentoProcessandoId === id;
   }
@@ -269,12 +416,16 @@ export class AgendamentosPageComponent implements OnInit {
     return this.agendamentoProcessandoId === id && this.tipoAcaoProcessando === 'cancelamento';
   }
 
+  processandoOrdem(id: number): boolean {
+    return this.agendamentoProcessandoId === id && this.tipoAcaoProcessando === 'ordem';
+  }
+
   private criarPayload(): AgendamentoPayload {
     const value = this.form.getRawValue();
     return {
       clienteId: Number(value.clienteId),
       servicoId: Number(value.servicoId),
-      veiculoId: value.veiculoId ? Number(value.veiculoId) : null,
+      veiculoId: Number(value.veiculoId),
       data: value.data,
       horario: value.horario,
       status: value.status,
@@ -291,6 +442,16 @@ export class AgendamentosPageComponent implements OnInit {
     return normalized ? normalized : null;
   }
 
+  private formatarMoeda(value: number): string {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+      maximumFractionDigits: 0
+    })
+      .format(value)
+      .replace(/\u00a0/g, ' ');
+  }
+
   private aplicarAgendamentoSalvo(agendamento: Agendamento): void {
     const indiceAtual = this.agendamentos.findIndex((item) => item.id === agendamento.id);
     if (indiceAtual >= 0) {
@@ -300,6 +461,14 @@ export class AgendamentosPageComponent implements OnInit {
     }
 
     this.agendamentos = this.ordenarAgendamentos(this.agendamentos);
+    this.atualizarAgendamentoSelecionado();
+  }
+
+  private atualizarAgendamentoSelecionado(): void {
+    if (!this.agendamentoSelecionado) {
+      return;
+    }
+    this.agendamentoSelecionado = this.agendamentos.find((item) => item.id === this.agendamentoSelecionado?.id) ?? null;
   }
 
   private ordenarAgendamentos(agendamentos: Agendamento[]): Agendamento[] {

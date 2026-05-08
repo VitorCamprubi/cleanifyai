@@ -16,13 +16,6 @@ public record ClienteRequest(
         @Email(message = "Email invalido")
         @Size(max = 120, message = "Email deve ter ate 120 caracteres")
         String email,
-        @Size(max = 120, message = "Veiculo deve ter ate 120 caracteres")
-        String veiculo,
-        @Pattern(
-                regexp = "^$|^[A-Za-z]{3}-?[0-9][A-Za-z0-9][0-9]{2}$",
-                message = "Placa invalida")
-        @Size(max = 10, message = "Placa deve ter ate 10 caracteres")
-        String placa,
         @Size(max = 500, message = "Observacoes deve ter ate 500 caracteres")
         String observacoes) {
 }

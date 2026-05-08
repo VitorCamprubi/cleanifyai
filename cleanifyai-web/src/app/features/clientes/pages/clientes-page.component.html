@@ -2,7 +2,7 @@
   <div>
     <p class="eyebrow">Clientes</p>
     <h3>Cadastre e mantenha a base de relacionamento organizada</h3>
-    <p>Ficha enxuta com dados essenciais para atendimento, retorno e acompanhamento do veiculo.</p>
+    <p>Ficha enxuta com dados de contato. Os veiculos ficam vinculados na area propria para manter o historico por carro.</p>
   </div>
 </section>
 
@@ -48,21 +48,6 @@
           }
         </label>
 
-        <label>
-          <span>Veiculo</span>
-          <input type="text" formControlName="veiculo" placeholder="Ex.: Honda Civic" [class.input-invalid]="campoInvalido('veiculo')" />
-          @if (campoInvalido('veiculo')) {
-            <small class="field-error">{{ mensagemErro('veiculo') }}</small>
-          }
-        </label>
-
-        <label>
-          <span>Placa</span>
-          <input type="text" formControlName="placa" placeholder="ABC1D23" [class.input-invalid]="campoInvalido('placa')" />
-          @if (campoInvalido('placa')) {
-            <small class="field-error">{{ mensagemErro('placa') }}</small>
-          }
-        </label>
       </div>
 
       <label>
@@ -105,7 +90,7 @@
             <tr>
               <th>Cliente</th>
               <th>Contato</th>
-              <th>Veiculo</th>
+              <th>Veiculos</th>
               <th></th>
             </tr>
           </thead>
@@ -114,17 +99,20 @@
               <tr>
                 <td>
                   <strong>{{ cliente.nome }}</strong>
-                  <span>{{ cliente.placa || 'Sem placa' }}</span>
+                  <span>{{ veiculosDoCliente(cliente.id).length }} veiculo(s)</span>
                 </td>
                 <td>
                   <strong>{{ formatarTelefone(cliente.telefone) }}</strong>
                   <span>{{ cliente.email || 'Sem e-mail' }}</span>
                 </td>
                 <td>
-                  <strong>{{ cliente.veiculo || 'Nao informado' }}</strong>
+                  <strong>{{ resumoVeiculos(cliente.id) }}</strong>
                   <span>{{ cliente.observacoes || 'Sem observacoes' }}</span>
                 </td>
                 <td class="actions">
+                  <a class="button button--ghost" routerLink="/veiculos" [queryParams]="{ clienteId: cliente.id }">
+                    Veiculos
+                  </a>
                   <button type="button" class="button button--ghost" (click)="editar(cliente)" [disabled]="salvando || itemProcessando(cliente.id)">
                     Editar
                   </button>
