@@ -36,6 +36,13 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.BAD_REQUEST, exception.getMessage(), request.getRequestURI());
     }
 
+    @ExceptionHandler(RateLimitExceededException.class)
+    public ResponseEntity<ApiErrorResponse> handleRateLimit(
+            RateLimitExceededException exception,
+            HttpServletRequest request) {
+        return buildResponse(HttpStatus.TOO_MANY_REQUESTS, exception.getMessage(), request.getRequestURI());
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiErrorResponse> handleValidation(
             MethodArgumentNotValidException exception,
@@ -67,6 +74,10 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiErrorResponse> handleAuthentication(
             AuthenticationException exception,
             HttpServletRequest request) {
+        if (exception instanceof RefreshTokenException) {
+            return buildResponse(HttpStatus.UNAUTHORIZED, exception.getMessage(), request.getRequestURI());
+        }
+
         if (exception instanceof DisabledException) {
             return buildResponse(HttpStatus.UNAUTHORIZED, "Usuario inativo", request.getRequestURI());
         }

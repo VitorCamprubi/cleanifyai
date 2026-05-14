@@ -1,0 +1,22 @@
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    empresa_id BIGINT,
+    user_id BIGINT,
+    user_email VARCHAR(160),
+    action VARCHAR(20) NOT NULL,
+    resource_type VARCHAR(80) NOT NULL,
+    resource_id VARCHAR(80),
+    http_method VARCHAR(10) NOT NULL,
+    path VARCHAR(500) NOT NULL,
+    status_code INT NOT NULL,
+    ip_address VARCHAR(80),
+    user_agent VARCHAR(500),
+    duration_ms BIGINT NOT NULL,
+    occurred_at DATETIME(6) NOT NULL,
+    PRIMARY KEY (id),
+    KEY idx_audit_empresa_occurred (empresa_id, occurred_at),
+    KEY idx_audit_user_occurred (user_id, occurred_at),
+    KEY idx_audit_resource (empresa_id, resource_type, resource_id),
+    CONSTRAINT fk_audit_empresa FOREIGN KEY (empresa_id) REFERENCES empresas (id),
+    CONSTRAINT fk_audit_user FOREIGN KEY (user_id) REFERENCES users (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

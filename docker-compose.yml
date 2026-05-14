@@ -1,0 +1,55 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: cleanifyai-mysql
+    environment:
+      MYSQL_DATABASE: cleanifyai
+      MYSQL_ROOT_PASSWORD: cleanifyai-dev
+    ports:
+      - "3306:3306"
+    volumes:
+      - cleanifyai_mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ./cleanifyai-api
+    container_name: cleanifyai-api
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: cleanifyai
+      DB_USERNAME: root
+      DB_PASSWORD: cleanifyai-dev
+      APP_JWT_SECRET: cleanifyai-dev-jwt-secret-change-before-prod-32chars
+      APP_SEED_ENABLED: "true"
+      SERVER_PORT: 8080
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8080/actuator/health/readiness || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  web:
+    build:
+      context: ./cleanifyai-web
+    container_name: cleanifyai-web
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "4200:80"
+
+volumes:
+  cleanifyai_mysql_data:

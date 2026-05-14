@@ -16,6 +16,8 @@ type IconKey =
   | 'servicos'
   | 'agendamentos'
   | 'ordens'
+  | 'financeiro'
+  | 'categorias'
   | 'ajustes'
   | 'mais';
 
@@ -41,13 +43,13 @@ export class AppShellComponent implements OnInit, OnDestroy {
   private readonly themeService = inject(ThemeService);
   private readonly toastService = inject(ToastService);
 
-  readonly nomeEmpresa = 'Cleanify Detailing';
-
   readonly navItems: NavItem[] = [
     { label: 'Dashboard', route: '/dashboard', caption: 'Visao geral', icon: 'dashboard' },
     { label: 'Clientes', route: '/clientes', caption: 'Base de relacionamento', icon: 'clientes' },
     { label: 'Ve\u00edculos', route: '/veiculos', caption: 'Frota dos clientes', icon: 'veiculos' },
     { label: 'Ordens', route: '/ordens', caption: 'Execucao operacional', icon: 'ordens' },
+    { label: 'Financeiro', route: '/financeiro', caption: 'Caixa e resultado', icon: 'financeiro' },
+    { label: 'Categorias', route: '/financeiro/categorias', caption: 'Receitas e despesas', icon: 'categorias' },
     { label: 'Agenda', route: '/agendamentos', caption: 'Agenda do dia', icon: 'agendamentos' },
     { label: 'Servi\u00e7os', route: '/servicos', caption: 'Catalogo e precificacao', icon: 'servicos' },
     { label: 'Ajustes', route: '/ajustes', caption: 'Preferencias', icon: 'ajustes' }
@@ -100,6 +102,10 @@ export class AppShellComponent implements OnInit, OnDestroy {
 
   get usuarioAtual(): AuthUser | null {
     return this.authService.usuarioAtual;
+  }
+
+  get nomeEmpresa(): string {
+    return this.usuarioAtual?.empresaNome ?? 'CleanifyAI';
   }
 
   get roleLabel(): string {

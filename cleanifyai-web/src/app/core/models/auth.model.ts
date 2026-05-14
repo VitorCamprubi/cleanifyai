@@ -3,6 +3,7 @@ export type UserRole = 'ADMIN' | 'ATENDENTE';
 export interface AuthUser {
   id: number;
   empresaId: number;
+  empresaNome: string;
   nome: string;
   email: string;
   role: UserRole;
@@ -17,6 +18,8 @@ export interface LoginResponse {
   token: string;
   tokenType: string;
   expiresAt: string;
+  refreshToken: string;
+  refreshExpiresAt: string;
   user: AuthUser;
 }
 

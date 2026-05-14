@@ -5,6 +5,7 @@ import com.cleanifyai.api.domain.enums.UserRole;
 public record AuthUserResponse(
         Long id,
         Long empresaId,
+        String empresaNome,
         String nome,
         String email,
         UserRole role) {

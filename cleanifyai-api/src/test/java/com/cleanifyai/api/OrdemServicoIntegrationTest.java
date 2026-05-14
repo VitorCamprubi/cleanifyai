@@ -26,10 +26,12 @@ import com.cleanifyai.api.domain.entity.User;
 import com.cleanifyai.api.domain.entity.Veiculo;
 import com.cleanifyai.api.domain.enums.UserRole;
 import com.cleanifyai.api.repository.AgendamentoRepository;
+import com.cleanifyai.api.repository.AuditLogRepository;
 import com.cleanifyai.api.repository.ClienteRepository;
 import com.cleanifyai.api.repository.EmpresaRepository;
 import com.cleanifyai.api.repository.LancamentoRepository;
 import com.cleanifyai.api.repository.OrdemServicoRepository;
+import com.cleanifyai.api.repository.RefreshTokenRepository;
 import com.cleanifyai.api.repository.ServicoRepository;
 import com.cleanifyai.api.repository.UserRepository;
 import com.cleanifyai.api.repository.VeiculoRepository;
@@ -50,6 +52,8 @@ class OrdemServicoIntegrationTest {
     @Autowired private OrdemServicoRepository ordemServicoRepository;
     @Autowired private LancamentoRepository lancamentoRepository;
     @Autowired private VeiculoRepository veiculoRepository;
+    @Autowired private AuditLogRepository auditLogRepository;
+    @Autowired private RefreshTokenRepository refreshTokenRepository;
     @Autowired private PasswordEncoder passwordEncoder;
 
     private Empresa empresa;
@@ -59,6 +63,8 @@ class OrdemServicoIntegrationTest {
 
     @BeforeEach
     void setUp() {
+        refreshTokenRepository.deleteAll();
+        auditLogRepository.deleteAll();
         lancamentoRepository.deleteAll();
         ordemServicoRepository.deleteAll();
         agendamentoRepository.deleteAll();

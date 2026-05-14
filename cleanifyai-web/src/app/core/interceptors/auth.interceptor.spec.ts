@@ -2,6 +2,7 @@ import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
+import { of, throwError } from 'rxjs';
 
 import { AuthService } from '../services/auth.service';
 import { authInterceptor } from './auth.interceptor';
@@ -54,8 +55,33 @@ describe('authInterceptor', () => {
     request.flush({});
   });
 
-  it('logs out and redirects when the backend returns 401', () => {
+  it('refreshes the session and retries once when the backend returns 401', () => {
     authService.token = 'jwt-token';
+    authService.refreshToken = 'refresh-token';
+    authService.refreshSession.and.returnValue(of({ token: 'new-jwt-token' }));
+
+    http.get('/api/clientes').subscribe({
+      next: (response) => {
+        expect(response).toEqual([{ id: 1 }]);
+      },
+      error: fail
+    });
+
+    const firstRequest = httpMock.expectOne('/api/clientes');
+    expect(firstRequest.request.headers.get('Authorization')).toBe('Bearer jwt-token');
+    firstRequest.flush({ message: 'Token expirado' }, { status: 401, statusText: 'Unauthorized' });
+
+    const retryRequest = httpMock.expectOne('/api/clientes');
+    expect(retryRequest.request.headers.get('Authorization')).toBe('Bearer new-jwt-token');
+    retryRequest.flush([{ id: 1 }]);
+
+    expect(authService.refreshSession).toHaveBeenCalled();
+    expect(authService.logout).not.toHaveBeenCalled();
+  });
+
+  it('logs out and redirects when the backend returns 401 without refresh token', () => {
+    authService.token = 'jwt-token';
+    authService.refreshToken = null;
 
     http.get('/api/clientes').subscribe({
       error: () => undefined
@@ -67,9 +93,28 @@ describe('authInterceptor', () => {
     expect(authService.logout).toHaveBeenCalledWith(false);
     expect(router.navigate).toHaveBeenCalledWith(['/login'], { queryParams: { session: 'expired' } });
   });
+
+  it('logs out and redirects when refresh fails', () => {
+    authService.token = 'jwt-token';
+    authService.refreshToken = 'refresh-token';
+    authService.refreshSession.and.returnValue(throwError(() => new Error('refresh failed')));
+
+    http.get('/api/clientes').subscribe({
+      error: () => undefined
+    });
+
+    const request = httpMock.expectOne('/api/clientes');
+    request.flush({ message: 'Token expirado' }, { status: 401, statusText: 'Unauthorized' });
+
+    expect(authService.refreshSession).toHaveBeenCalled();
+    expect(authService.logout).toHaveBeenCalledWith(false);
+    expect(router.navigate).toHaveBeenCalledWith(['/login'], { queryParams: { session: 'expired' } });
+  });
 });
 
 class AuthServiceStub {
   token: string | null = null;
+  refreshToken: string | null = null;
   logout = jasmine.createSpy('logout');
+  refreshSession = jasmine.createSpy('refreshSession');
 }

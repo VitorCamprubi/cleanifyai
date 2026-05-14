@@ -8,6 +8,8 @@ spring:
     hibernate:
       ddl-auto: create-drop
     open-in-view: false
+  flyway:
+    enabled: false
   sql:
     init:
       mode: never
@@ -19,3 +21,13 @@ app:
     jwt:
       secret: cleanifyai-jwt-secret-chave-com-32-caracteres-minimos
       expiration-seconds: 43200
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true

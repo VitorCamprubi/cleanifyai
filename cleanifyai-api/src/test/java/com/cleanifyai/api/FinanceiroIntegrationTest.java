@@ -23,7 +23,9 @@ import com.cleanifyai.api.domain.entity.Empresa;
 import com.cleanifyai.api.domain.entity.User;
 import com.cleanifyai.api.domain.enums.UserRole;
 import com.cleanifyai.api.repository.EmpresaRepository;
+import com.cleanifyai.api.repository.AuditLogRepository;
 import com.cleanifyai.api.repository.LancamentoRepository;
+import com.cleanifyai.api.repository.RefreshTokenRepository;
 import com.cleanifyai.api.repository.UserRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,12 +39,16 @@ class FinanceiroIntegrationTest {
     @Autowired private EmpresaRepository empresaRepository;
     @Autowired private UserRepository userRepository;
     @Autowired private LancamentoRepository lancamentoRepository;
+    @Autowired private AuditLogRepository auditLogRepository;
+    @Autowired private RefreshTokenRepository refreshTokenRepository;
     @Autowired private PasswordEncoder passwordEncoder;
 
     private Empresa empresa;
 
     @BeforeEach
     void setUp() {
+        refreshTokenRepository.deleteAll();
+        auditLogRepository.deleteAll();
         lancamentoRepository.deleteAll();
         userRepository.deleteAll();
         empresaRepository.deleteAll();

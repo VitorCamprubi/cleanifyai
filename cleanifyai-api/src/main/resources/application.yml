@@ -1,35 +1,51 @@
 spring:
   application:
     name: cleanifyai-api
-  datasource:
-    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:cleanifyai}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Sao_Paulo
-    username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:212420}
+  profiles:
+    default: dev
   jpa:
-    hibernate:
-      ddl-auto: update
     open-in-view: false
-    show-sql: true
     properties:
       hibernate:
         format_sql: true
+  flyway:
+    baseline-on-migrate: true
+    locations: classpath:db/migration
   jackson:
     time-zone: America/Sao_Paulo
 
 server:
   port: ${SERVER_PORT:8080}
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+
 app:
   cors:
     allowed-origins:
       - http://localhost:4200
       - http://127.0.0.1:4200
-  seed:
-    enabled: ${APP_SEED_ENABLED:true}
   integracoes:
     whatsapp-enabled: ${APP_WHATSAPP_ENABLED:false}
     ia-enabled: ${APP_AI_ENABLED:false}
   security:
     jwt:
-      secret: ${APP_JWT_SECRET:cleanifyai-jwt-secret-chave-com-32-caracteres-minimos}
       expiration-seconds: ${APP_JWT_EXPIRATION_SECONDS:43200}
+    refresh-token:
+      expiration-seconds: ${APP_REFRESH_TOKEN_EXPIRATION_SECONDS:2592000}
+    rate-limit:
+      login-max-attempts: ${APP_LOGIN_RATE_LIMIT_MAX_ATTEMPTS:5}
+      login-window-seconds: ${APP_LOGIN_RATE_LIMIT_WINDOW_SECONDS:900}

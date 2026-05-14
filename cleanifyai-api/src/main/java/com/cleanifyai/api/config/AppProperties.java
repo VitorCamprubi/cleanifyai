@@ -76,9 +76,19 @@ public class AppProperties {
 
     public static class Security {
         private final Jwt jwt = new Jwt();
+        private final RefreshToken refreshToken = new RefreshToken();
+        private final RateLimit rateLimit = new RateLimit();
 
         public Jwt getJwt() {
             return jwt;
+        }
+
+        public RefreshToken getRefreshToken() {
+            return refreshToken;
+        }
+
+        public RateLimit getRateLimit() {
+            return rateLimit;
         }
     }
 
@@ -100,6 +110,39 @@ public class AppProperties {
 
         public void setExpirationSeconds(long expirationSeconds) {
             this.expirationSeconds = expirationSeconds;
+        }
+    }
+
+    public static class RefreshToken {
+        private long expirationSeconds = 2_592_000;
+
+        public long getExpirationSeconds() {
+            return expirationSeconds;
+        }
+
+        public void setExpirationSeconds(long expirationSeconds) {
+            this.expirationSeconds = expirationSeconds;
+        }
+    }
+
+    public static class RateLimit {
+        private int loginMaxAttempts = 5;
+        private long loginWindowSeconds = 900;
+
+        public int getLoginMaxAttempts() {
+            return loginMaxAttempts;
+        }
+
+        public void setLoginMaxAttempts(int loginMaxAttempts) {
+            this.loginMaxAttempts = loginMaxAttempts;
+        }
+
+        public long getLoginWindowSeconds() {
+            return loginWindowSeconds;
+        }
+
+        public void setLoginWindowSeconds(long loginWindowSeconds) {
+            this.loginWindowSeconds = loginWindowSeconds;
         }
     }
 }

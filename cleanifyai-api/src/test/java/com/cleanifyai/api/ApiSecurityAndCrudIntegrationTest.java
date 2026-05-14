@@ -29,8 +29,10 @@ import com.cleanifyai.api.domain.entity.User;
 import com.cleanifyai.api.domain.entity.Veiculo;
 import com.cleanifyai.api.domain.enums.UserRole;
 import com.cleanifyai.api.repository.AgendamentoRepository;
+import com.cleanifyai.api.repository.AuditLogRepository;
 import com.cleanifyai.api.repository.ClienteRepository;
 import com.cleanifyai.api.repository.EmpresaRepository;
+import com.cleanifyai.api.repository.RefreshTokenRepository;
 import com.cleanifyai.api.repository.ServicoRepository;
 import com.cleanifyai.api.repository.UserRepository;
 import com.cleanifyai.api.repository.VeiculoRepository;
@@ -66,6 +68,12 @@ class ApiSecurityAndCrudIntegrationTest {
     private VeiculoRepository veiculoRepository;
 
     @Autowired
+    private AuditLogRepository auditLogRepository;
+
+    @Autowired
+    private RefreshTokenRepository refreshTokenRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     private Cliente clienteBase;
@@ -75,6 +83,8 @@ class ApiSecurityAndCrudIntegrationTest {
 
     @BeforeEach
     void setUp() {
+        refreshTokenRepository.deleteAll();
+        auditLogRepository.deleteAll();
         agendamentoRepository.deleteAll();
         veiculoRepository.deleteAll();
         clienteRepository.deleteAll();
@@ -138,6 +148,8 @@ class ApiSecurityAndCrudIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").isNotEmpty())
                 .andExpect(jsonPath("$.tokenType").value("Bearer"))
+                .andExpect(jsonPath("$.refreshToken").isNotEmpty())
+                .andExpect(jsonPath("$.refreshExpiresAt").isNotEmpty())
                 .andExpect(jsonPath("$.user.email").value("admin@cleanifyai.local"))
                 .andExpect(jsonPath("$.user.role").value("ADMIN"));
     }

@@ -1,128 +1,65 @@
-﻿# CleanifyAI API
+# CleanifyAI API
 
-Backend do MVP do CleanifyAI para estéticas automotivas.
+Backend Spring Boot do CleanifyAI para esteticas automotivas.
 
-## Visao geral
+## Visao Geral
 
-A API foi organizada em camadas para manter o MVP simples, legivel e facil de evoluir:
+A API esta organizada em camadas simples:
 
 - `controller`: endpoints REST JSON.
 - `service`: regras de negocio e orquestracao.
 - `repository`: acesso a dados com Spring Data JPA.
-- `domain/entity`: entidades persistidas no MySQL.
+- `domain/entity`: entidades persistidas.
 - `dto`: contratos de request/response.
-- `config`: CORS, seed e properties da aplicacao.
-- `integration`: pontos de extensao para WhatsApp e IA.
-- `exception`: tratamento global com `@RestControllerAdvice`.
+- `security`: JWT, refresh token, auditoria HTTP e autenticacao.
+- `config`: CORS, Security, seed e properties.
+- `shared/tenant`: contexto e listener multi-tenant.
 
-## Estrutura principal
+## Modulos Atuais
 
-```text
-cleanifyai-api/
-  database/
-    init-mysql.sql
-  src/main/java/com/cleanifyai/api/
-    config/
-    controller/
-    domain/
-    dto/
-    exception/
-    integration/
-    repository/
-    service/
-  src/main/resources/
-    application.yml
-  src/test/resources/
-    application.yml
-```
+- Auth com signup de empresa, login JWT, refresh token rotativo e logout.
+- Multi-tenant por `empresa_id`.
+- Clientes, veiculos, servicos e agendamentos.
+- Ordens de servico com itens e maquina de estados.
+- Financeiro com lancamentos, categorias e resumo.
+- Audit log de escritas HTTP.
+- Actuator health, liveness e readiness.
 
-## Funcionalidades do MVP
+## Como Rodar
 
-- CRUD completo de clientes.
-- CRUD completo de servicos.
-- CRUD operacional de agendamentos.
-- Dashboard com totais e proximos agendamentos.
-- Endpoint de health check em `GET /api/ping`.
-- Seed opcional para desenvolvimento.
-
-## Endpoints
-
-- `GET /api/ping`
-- `GET|POST /api/clientes`
-- `GET|PUT|DELETE /api/clientes/{id}`
-- `GET|POST /api/servicos`
-- `GET|PUT|DELETE /api/servicos/{id}`
-- `GET|POST /api/agendamentos`
-- `GET|PUT /api/agendamentos/{id}`
-- `PATCH /api/agendamentos/{id}/status`
-- `PATCH /api/agendamentos/{id}/cancelar`
-- `GET /api/dashboard`
-
-## Como rodar localmente
-
-### 1. Suba o MySQL
-
-Crie o banco com o script abaixo, se necessario:
-
-```sql
-SOURCE database/init-mysql.sql;
-```
-
-### 2. Configure as variaveis de ambiente
-
-Valores padrao definidos em `src/main/resources/application.yml`:
-
-- `DB_HOST=localhost`
-- `DB_PORT=3306`
-- `DB_NAME=cleanifyai`
-- `DB_USERNAME=root`
-- `DB_PASSWORD=root`
-- `APP_SEED_ENABLED=true`
-- `SERVER_PORT=8080`
-
-Se voce estiver rodando pelo IntelliJ, configure essas variaveis em:
-
-- `Run/Debug Configurations`
-- `Environment variables`
-
-Exemplo:
-
-```text
-DB_HOST=localhost;DB_PORT=3306;DB_NAME=cleanifyai;DB_USERNAME=root;DB_PASSWORD=sua_senha_real
-```
-
-Se o seu MySQL local nao usa senha `root`, o backend nao vai subir com os valores padrao.
-
-### 3. Execute a aplicacao
-
-Windows:
+Profile padrao: `dev`.
 
 ```bash
 mvnw.cmd spring-boot:run
 ```
 
-Linux/macOS:
+Defaults do profile `dev`:
 
-```bash
-./mvnw spring-boot:run
-```
+- `DB_HOST=localhost`
+- `DB_PORT=3306`
+- `DB_NAME=cleanifyai`
+- `DB_USERNAME=root`
+- `DB_PASSWORD=212420`
+- `APP_SEED_ENABLED=true`
+- `SERVER_PORT=8080`
 
-### 4. Execute os testes
+Para usar outro MySQL, configure as variaveis no IntelliJ em `Run/Debug Configurations > Environment variables`.
+
+## Endpoints Publicos
+
+- `GET /api/ping`
+- `POST /api/auth/login`
+- `POST /api/auth/register-company`
+- `POST /api/auth/refresh`
+- `POST /api/auth/logout`
+- `GET /actuator/health`
+- `GET /actuator/health/liveness`
+- `GET /actuator/health/readiness`
+
+## Testes
 
 ```bash
 mvnw.cmd test
 ```
 
-## Decisoes de arquitetura
-
-- `empresaId` foi colocado em uma entidade base para preparar multi-tenant futuro sem acoplar isso no MVP.
-- As interfaces `NotificadorWhatsApp` e `MotorSugestaoIa` deixam pontos claros para plug de integracoes futuras.
-- A autenticacao nao foi implementada para acelerar a entrega do MVP. O proximo passo natural e adicionar Spring Security com JWT.
-- O seed e opcional via propriedade para facilitar demos e desenvolvimento local.
-
-## Evolucao recomendada
-
-- Adicionar Spring Security + JWT com papeis basicos.
-- Implementar tenancy por empresa com filtro por `empresaId`.
-- Integrar confirmacoes automáticas por WhatsApp via webhook/provider.
-- Incluir trilha de auditoria e historico de status de agendamento.
+Os testes usam H2 em memoria com `ddl-auto=create-drop` e Flyway desabilitado para manter a suite rapida.

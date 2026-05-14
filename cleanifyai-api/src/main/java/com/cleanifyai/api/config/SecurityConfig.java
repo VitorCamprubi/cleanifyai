@@ -16,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.cleanifyai.api.security.AuditLogFilter;
 import com.cleanifyai.api.security.JwtAuthenticationFilter;
 import com.cleanifyai.api.security.RestAccessDeniedHandler;
 import com.cleanifyai.api.security.RestAuthenticationEntryPoint;
@@ -27,6 +28,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
             JwtAuthenticationFilter jwtAuthenticationFilter,
+            AuditLogFilter auditLogFilter,
             RestAuthenticationEntryPoint authenticationEntryPoint,
             RestAccessDeniedHandler accessDeniedHandler,
             AuthenticationProvider authenticationProvider) throws Exception {
@@ -40,7 +42,15 @@ public class SecurityConfig {
                         .accessDeniedHandler(accessDeniedHandler))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/api/auth/login", "/api/auth/register-company", "/api/ping").permitAll()
+                        .requestMatchers(
+                                "/api/auth/login",
+                                "/api/auth/register-company",
+                                "/api/auth/refresh",
+                                "/api/auth/logout",
+                                "/api/ping",
+                                "/actuator/health",
+                                "/actuator/health/**")
+                            .permitAll()
                         .requestMatchers(
                                 "/api/clientes", "/api/clientes/**",
                                 "/api/veiculos", "/api/veiculos/**",
@@ -57,7 +67,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/financeiro/**")
                             .hasRole("ADMIN")
                         .anyRequest().authenticated())
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(auditLogFilter, JwtAuthenticationFilter.class);
 
         return http.build();
     }

@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, finalize, shareReplay, tap, throwError } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import {
@@ -20,7 +20,10 @@ export class AuthService {
   private readonly router = inject(Router);
   private readonly loginEndpoint = `${environment.apiUrl}/auth/login`;
   private readonly registerEndpoint = `${environment.apiUrl}/auth/register-company`;
+  private readonly refreshEndpoint = `${environment.apiUrl}/auth/refresh`;
+  private readonly logoutEndpoint = `${environment.apiUrl}/auth/logout`;
   private readonly sessionSubject = new BehaviorSubject<LoginResponse | null>(this.carregarSessao());
+  private refreshInFlight$?: Observable<LoginResponse>;
 
   readonly session$ = this.sessionSubject.asObservable();
 
@@ -36,7 +39,35 @@ export class AuthService {
     );
   }
 
+  refreshSession(): Observable<LoginResponse> {
+    const refreshToken = this.refreshToken;
+    if (!refreshToken) {
+      return throwError(() => new Error('Refresh token ausente'));
+    }
+
+    if (this.refreshInFlight$) {
+      return this.refreshInFlight$;
+    }
+
+    this.refreshInFlight$ = this.http.post<LoginResponse>(this.refreshEndpoint, { refreshToken }).pipe(
+      tap((response) => this.salvarSessao(response)),
+      finalize(() => {
+        this.refreshInFlight$ = undefined;
+      }),
+      shareReplay({ bufferSize: 1, refCount: false })
+    );
+
+    return this.refreshInFlight$;
+  }
+
   logout(redirecionar = true): void {
+    const refreshToken = this.refreshToken;
+    if (refreshToken) {
+      this.http.post<void>(this.logoutEndpoint, { refreshToken }).subscribe({
+        error: () => undefined
+      });
+    }
+
     localStorage.removeItem(AUTH_STORAGE_KEY);
     this.sessionSubject.next(null);
 
@@ -51,7 +82,7 @@ export class AuthService {
       return false;
     }
 
-    if (this.tokenExpirado(session.token)) {
+    if (this.sessaoExpirada(session)) {
       this.logout(false);
       return false;
     }
@@ -69,6 +100,10 @@ export class AuthService {
 
   get token(): string | null {
     return this.sessionSubject.value?.token ?? null;
+  }
+
+  get refreshToken(): string | null {
+    return this.sessionSubject.value?.refreshToken ?? null;
   }
 
   get usuarioAtual(): AuthUser | null {
@@ -92,7 +127,7 @@ export class AuthService {
 
     try {
       const session = JSON.parse(raw) as LoginResponse;
-      if (this.tokenExpirado(session.token)) {
+      if (this.sessaoExpirada(session)) {
         localStorage.removeItem(AUTH_STORAGE_KEY);
         return null;
       }
@@ -102,6 +137,14 @@ export class AuthService {
       localStorage.removeItem(AUTH_STORAGE_KEY);
       return null;
     }
+  }
+
+  private sessaoExpirada(session: LoginResponse): boolean {
+    if (session.refreshToken && session.refreshExpiresAt) {
+      return new Date(session.refreshExpiresAt).getTime() <= Date.now();
+    }
+
+    return this.tokenExpirado(session.token);
   }
 
   private tokenExpirado(token: string): boolean {
